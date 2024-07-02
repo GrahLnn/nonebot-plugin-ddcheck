@@ -1,6 +1,7 @@
 import traceback
+import json
 
-from nonebot import on_command, require
+from nonebot import on_command, require, get_driver
 from nonebot.adapters import Message
 from nonebot.log import logger
 from nonebot.matcher import Matcher
@@ -14,7 +15,7 @@ require("nonebot_plugin_localstore")
 
 from nonebot_plugin_alconna import UniMessage
 
-from .config import Config
+from .config import Config, dir_path
 from .data_source import get_reply
 
 __plugin_meta__ = PluginMetadata(
@@ -30,15 +31,28 @@ __plugin_meta__ = PluginMetadata(
     },
 )
 
+# 获取插件的数据目录路径
+plugin_data_dir = get_driver().config.plugin_data_directory
+
+# 定义 dd.json 的路径
+dd_file = plugin_data_dir / "dd.json"
+
+# 尝试从 localstore 加载 dd.json 的数据，如果不存在则初始化为空列表
+try:
+    alias_data = plugin_data_dir.load("dd_data.json")
+except FileNotFoundError:
+    alias_data = []
 
 ddcheck = on_command("查成分", block=True, priority=12)
+
+
 @ddcheck.handle()
 async def _(
     matcher: Matcher,
     msg: Message = CommandArg(),
 ):
     text = msg.extract_plain_text().strip()
-    
+
     if not text:
         matcher.block = False
         await matcher.finish()
@@ -53,3 +67,39 @@ async def _(
         await matcher.finish(result)
 
     await UniMessage.image(raw=result).send()
+
+
+ddadd = on_command("adddd", block=True, priority=12)
+
+
+@ddadd.handle()
+async def _(
+    matcher: Matcher,
+    msg: Message = CommandArg(),
+):
+    text = msg.extract_plain_text().strip()
+
+    if not text:
+        matcher.block = False
+        await matcher.finish()
+
+    try:
+        nickname, uid = text.split(" ")
+        # 检查是否存在相同的 nickname
+        updated = False
+        for item in alias_data:
+            if item["nickname"] == nickname:
+                item["uid"] = uid
+                updated = True
+                break
+
+        # 如果不存在相同的 nickname，则添加新条目
+        if not updated:
+            alias_data.append({"nickname": nickname, "uid": uid})
+
+        # 保存更新后的数据到 localstore
+        plugin_data_dir.save("dd_data.json", alias_data)
+
+        await matcher.finish("更新成功")
+    except ValueError:
+        await matcher.finish("参数错误")
