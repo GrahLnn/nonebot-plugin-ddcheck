@@ -8,9 +8,3 @@ class Config(BaseModel):
 
 
 ddcheck_config = get_plugin_config(Config)
-
-dir_path = Path(__file__).parent
-template_path = dir_path / "template"
-env = jinja2.Environment(
-    loader=jinja2.FileSystemLoader(template_path), enable_async=True
-)

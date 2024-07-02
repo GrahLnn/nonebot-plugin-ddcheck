@@ -17,7 +17,7 @@ require("nonebot_plugin_localstore")
 from nonebot_plugin_alconna import UniMessage
 import nonebot_plugin_localstore as store
 
-from .config import Config, dir_path
+from .config import Config
 from .data_source import get_reply
 
 __plugin_meta__ = PluginMetadata(
