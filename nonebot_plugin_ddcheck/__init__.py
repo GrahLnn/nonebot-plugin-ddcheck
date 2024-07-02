@@ -32,15 +32,13 @@ __plugin_meta__ = PluginMetadata(
 
 
 ddcheck = on_command("查成分", block=True, priority=12)
-
-
 @ddcheck.handle()
 async def _(
     matcher: Matcher,
     msg: Message = CommandArg(),
 ):
     text = msg.extract_plain_text().strip()
-    print(text)
+    
     if not text:
         matcher.block = False
         await matcher.finish()

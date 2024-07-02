@@ -62,7 +62,11 @@
         align-items: center;
         margin-top: 5px;
       }
+      .fans {
+        font-size: small;
+      }
       .follows {
+        font-size: small;
         margin-left: 10px;
       }
       .data-bar {
@@ -139,13 +143,17 @@
         margin-left: 3px;
         margin-right: 3px;
       }
+      .up-name {
+        font-size: small;
+        font-weight: bold;
+      }
     </style>
   </head>
   <body>
     <div class="image">
       <div class="info-box">
         <div class="face">
-          <img src="{{ info['face'] }}">
+          <img src="{{ info['face'] }}" />
         </div>
         <div class="info">
           <div class="name-bar">
@@ -166,14 +174,18 @@
           <tr>
             <td>
               <div class="up-name">{{ vtb['name'] }}</div>
-              <div class="up-uid">{{ vtb['uid'] }}</div>
-              {% if vtb.get('medal') %}
-              {% set medal = vtb['medal'] %}
+              {% if vtb.get('medal') %} {% set medal = vtb['medal'] %}
               <div class="medal-box">
-                <div class="medal-name" style="border-color: {{ medal['color_border'] }}; background-image: linear-gradient(45deg,{{ medal['color_start'] }},{{ medal['color_end'] }});">
+                <div
+                  class="medal-name"
+                  style="border-color: {{ medal['color_border'] }}; background-image: linear-gradient(45deg,{{ medal['color_start'] }},{{ medal['color_end'] }});"
+                >
                   <div class="tiny">{{ medal['name'] }}</div>
                 </div>
-                <div class="medal-level" style="border-color: {{ medal['color_border'] }}; color: {{ medal['color_border'] }};">
+                <div
+                  class="medal-level"
+                  style="border-color: {{ medal['color_border'] }}; color: {{ medal['color_border'] }};"
+                >
                   <div class="tiny">{{ medal['level'] }}</div>
                 </div>
               </div>
