@@ -102,7 +102,8 @@ async def _(
             alias_data.append({"nickname": nickname, "uid": uid})
 
         # 保存更新后的数据到 localstore
-        plugin_data_dir.save("dd_data.json", alias_data)
+        with open(dd_file, "w", encoding="utf-8") as f:
+            json.dump(alias_data, f, ensure_ascii=False, indent=4)
 
         await matcher.finish("更新成功")
     except ValueError:
