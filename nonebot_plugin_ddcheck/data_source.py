@@ -2,12 +2,12 @@ import json
 import math
 import traceback
 from http.cookies import SimpleCookie
-
+from pathlib import Path
 from typing import List, Optional, Union
 
 import bilireq
 import httpx
-from .config import env
+import jinja2
 from bilireq.utils import get_homepage_cookies
 from nonebot.log import logger
 from nonebot_plugin_apscheduler import scheduler
@@ -19,6 +19,11 @@ from .config import ddcheck_config
 data_path = get_cache_dir("nonebot_plugin_ddcheck")
 vtb_list_path = data_path / "vtb_list.json"
 
+dir_path = Path(__file__).parent
+template_path = dir_path / "template"
+env = jinja2.Environment(
+    loader=jinja2.FileSystemLoader(template_path), enable_async=True
+)
 
 raw_cookie = ddcheck_config.bilibili_cookie
 cookie = SimpleCookie()
