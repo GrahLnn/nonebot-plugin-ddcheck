@@ -40,6 +40,7 @@ async def _(
     msg: Message = CommandArg(),
 ):
     text = msg.extract_plain_text().strip()
+    print(text)
     if not text:
         matcher.block = False
         await matcher.finish()
