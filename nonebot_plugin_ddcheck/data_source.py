@@ -190,7 +190,7 @@ async def get_reply(name: str) -> Union[str, bytes]:
         "face": user_info["face"],
         "fans": user_info["fans"],
         "follows": follows_num,
-        "percent": f"{percent:.2f}%是vtb",
+        "percent": f"vtb-{percent:.2f}%({vtbs_num})",
         "vtbs": vtbs,
         "num_per_col": num_per_col,
     }
