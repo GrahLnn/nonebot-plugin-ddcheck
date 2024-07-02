@@ -1,5 +1,6 @@
 import traceback
 import json
+from pathlib import Path
 
 from nonebot import on_command, require, get_driver
 from nonebot.adapters import Message
@@ -14,6 +15,7 @@ require("nonebot_plugin_htmlrender")
 require("nonebot_plugin_localstore")
 
 from nonebot_plugin_alconna import UniMessage
+import nonebot_plugin_localstore as store
 
 from .config import Config, dir_path
 from .data_source import get_reply
@@ -32,14 +34,16 @@ __plugin_meta__ = PluginMetadata(
 )
 
 # 获取插件的数据目录路径
-plugin_data_dir = get_driver().config.plugin_data_directory
+# plugin_data_dir = get_driver().config.plugin_data_directory
 
 # 定义 dd.json 的路径
-dd_file = plugin_data_dir / "dd.json"
+# dd_file = plugin_data_dir / "dd.json"
+dd_file: Path = store.get_data_file("nonebot_plugin_ddcheck", "dd.json")
 
 # 尝试从 localstore 加载 dd.json 的数据，如果不存在则初始化为空列表
 try:
-    alias_data = plugin_data_dir.load("dd_data.json")
+    with open(dd_file, "r", encoding="utf-8") as f:
+        alias_data = json.load(f)
 except FileNotFoundError:
     alias_data = []
 
