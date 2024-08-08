@@ -118,9 +118,14 @@ async def get_user_info(uid: int) -> dict:
     cookies.update(await get_homepage_cookies())
     url = "https://account.bilibili.com/api/member/getCardByMid"
     params = {"mid": uid}
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        "Referer": "https://www.bilibili.com/",
+        "Accept": "application/json, text/plain, */*",
+    }
     async with httpx.AsyncClient(timeout=10) as client:
-        resp = await client.get(url, params=params, cookies=cookies)
-        print(resp)
+        resp = await client.get(url, params=params, cookies=cookies, headers=headers)
+        resp.raise_for_status()
         result = resp.json()
         return result["card"]
 
