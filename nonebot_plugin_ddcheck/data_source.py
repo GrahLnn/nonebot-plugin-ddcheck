@@ -120,6 +120,7 @@ async def get_user_info(uid: int) -> dict:
     params = {"mid": uid}
     async with httpx.AsyncClient(timeout=10) as client:
         resp = await client.get(url, params=params, cookies=cookies)
+        print(resp)
         result = resp.json()
         return result["card"]
 
