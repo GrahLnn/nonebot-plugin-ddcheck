@@ -38,7 +38,7 @@ dd_file: Path = store.get_data_file("nonebot_plugin_ddcheck", "dd.json")
 
 # 尝试从 localstore 加载 dd.json 的数据，如果不存在则初始化为空列表
 try:
-    with open(dd_file, "r", encoding="utf-8") as f:
+    with open(dd_file, encoding="utf-8") as f:
         alias_data = json.load(f)
 except FileNotFoundError:
     alias_data = []
@@ -110,6 +110,7 @@ async def _(
 
 alldd = on_command("alldd", block=True, priority=12)
 
+
 @alldd.handle()
 async def _(
     matcher: Matcher,
@@ -118,3 +119,25 @@ async def _(
     for item in alias_data:
         text += f"{item['nickname']} -> {item['uid']}\n"
     await matcher.finish(text)
+
+rmdd = on_command("rmdd", block=True, priority=12)
+
+
+@rmdd.handle()
+async def _(
+    matcher: Matcher,
+    msg: Message = CommandArg(),
+):
+    text = msg.extract_plain_text().strip()
+    if not text:
+        matcher.block = False
+        await matcher.finish()
+
+    for item in alias_data:
+        if item["nickname"] == text:
+            alias_data.remove(item)
+            with open(dd_file, "w", encoding="utf-8") as f:
+                json.dump(alias_data, f, ensure_ascii=False, indent=4)
+            await matcher.finish("删除成功")
+            break
+
