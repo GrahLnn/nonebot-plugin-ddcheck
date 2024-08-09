@@ -1,22 +1,23 @@
-import traceback
 import json
+import traceback
 from pathlib import Path
 
+import yt_dlp
 from nonebot import on_command, require
 from nonebot.adapters import Message
+from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent, Message, MessageEvent
 from nonebot.log import logger
 from nonebot.matcher import Matcher
 from nonebot.params import CommandArg
 from nonebot.plugin import PluginMetadata, inherit_supported_adapters
-from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent, Message, MessageEvent
 
 require("nonebot_plugin_alconna")
 require("nonebot_plugin_apscheduler")
 require("nonebot_plugin_htmlrender")
 require("nonebot_plugin_localstore")
 
-from nonebot_plugin_alconna import UniMessage
 import nonebot_plugin_localstore as store
+from nonebot_plugin_alconna import UniMessage
 
 from .config import Config
 from .data_source import get_reply
@@ -37,6 +38,16 @@ __plugin_meta__ = PluginMetadata(
 # 获取插件的数据目录路径
 dd_file: Path = store.get_data_file("nonebot_plugin_ddcheck", "dd.json")
 vtb_file: Path = store.get_data_file("nonebot_plugin_ddcheck", "vtb.json")
+ytb_file: Path = store.get_data_file("nonebot_plugin_ddcheck", "ytb.json")
+
+ydl_opts = {
+    "flat_playlist": True,
+    "skip_download": True,
+    "playlistend": 1,
+    "extract_flat": True,
+    "format": "json",
+    "quiet": True,
+}
 
 # 尝试从 localstore 加载 dd.json 的数据，如果不存在则初始化为空列表
 try:
@@ -51,18 +62,20 @@ try:
 except FileNotFoundError:
     vtb_data = []
 
+try:
+    with open(ytb_file, encoding="utf-8") as f:
+        ytb_data = json.load(f)
+except FileNotFoundError:
+    ytb_data = []
+
 ddcheck = on_command("查成分", block=True, priority=12)
 
 
 @ddcheck.handle()
 async def _(
-    event: MessageEvent,
     matcher: Matcher,
     msg: Message = CommandArg(),
 ):
-    if isinstance(event, GroupMessageEvent):
-        group_id = event.group_id
-        print(group_id)
     text = msg.extract_plain_text().strip()
     nickname_list = [item["nickname"] for item in alias_data]
     if text in nickname_list:
@@ -95,7 +108,7 @@ async def _(
 
     if not text:
         matcher.block = False
-        await matcher.finish()
+        await matcher.finish("查谁的成分？听不见！重来！！")
 
     try:
         nickname, uid = text.split(" ")
@@ -125,21 +138,83 @@ vtbadd = on_command("vtbadd", block=True, priority=12)
 
 @vtbadd.handle()
 async def _(
+    event: MessageEvent,
+    matcher: Matcher,
+    msg: Message = CommandArg(),
+):
+    print(event.user_id)
+    text = msg.extract_plain_text().strip()
+    if not isinstance(event, GroupMessageEvent):
+        await matcher.finish("请在群内使用命令")
+    group_id = event.group_id
+    if not text:
+        matcher.block = False
+        await matcher.finish("加谁的频道？听不见！重来！！")
+    try:
+        nickname, uid = text.split(" ")
+        updated = False
+        for item in vtb_data:
+            if item["uid"] == uid:
+                if group_id not in item["sub_group"]:
+                    item["sub_group"].append(group_id)
+                updated = True
+                break
+        if not updated:
+            vtb_data.append({"nickname": nickname, "uid": uid, "sub_group": [group_id]})
+        with open(vtb_file, "w", encoding="utf-8") as f:
+            json.dump(vtb_data, f, ensure_ascii=False, indent=4)
+        await matcher.finish(f"关注{nickname}成功喵~")
+    except ValueError:
+        await matcher.finish("参数错误")
+
+
+ytbadd = on_command("ytbadd", block=True, priority=12)
+
+
+@ytbadd.handle()
+async def _(
+    event: MessageEvent,
     matcher: Matcher,
     msg: Message = CommandArg(),
 ):
     text = msg.extract_plain_text().strip()
     if not text:
         matcher.block = False
-        await matcher.finish()
+        await matcher.finish("加谁的频道？听不见！重来！！")
     try:
-        nickname, uid = text.split(" ")
-        vtb_data.append({"nickname": nickname, "uid": uid})
-        with open(vtb_file, "w", encoding="utf-8") as f:
-            json.dump(vtb_data, f, ensure_ascii=False, indent=4)
-        await matcher.finish(f"关注{nickname}成功喵~")
-    except ValueError:
-        await matcher.finish("参数错误")
+        nickname, id = text.split(" ")
+        if not isinstance(event, GroupMessageEvent):
+            await matcher.finish("请在群内使用命令")
+        group_id = event.group_id
+        if not id:
+            matcher.block = False
+            await matcher.finish("加谁的频道？格式错误！重来！！")
+        if not id.startswith("@"):
+            id = "@" + id
+
+        updated = False
+        for item in ytb_data:
+            if item["id"] == id:
+                if group_id not in item["sub_group"]:
+                    item["sub_group"].append(group_id)
+                updated = True
+                break
+        if not updated:
+            url = f"https://www.youtube.com/{id}/streams"
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                result = ydl.extract_info(url, download=False)
+            if result:
+                ytb_data.append({"nickname": nickname, "id": id, "sub_group": [group_id]})
+                await matcher.finish(f"关注{nickname}成功喵~")
+            else:
+                await matcher.finish("频道不存在")
+        with open(ytb_file, "w", encoding="utf-8") as f:
+            json.dump(ytb_data, f, ensure_ascii=False, indent=4)
+
+    except Exception:
+        logger.warning(traceback.format_exc())
+        await matcher.finish("出错了，请稍后再试")
+
 
 
 alldd = on_command("alldd", block=True, priority=12)
