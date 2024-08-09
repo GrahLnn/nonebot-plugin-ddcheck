@@ -85,6 +85,7 @@ async def update_timers(bot, vtb_data, ytb_data):
         live_info = get_upcoming_bili_live(vtb["uid"])
         if live_info:
             release_time = live_info["release_time"]
+            print(live_info)
             if vtb["uid"] not in timers:
                 await add_timer(
                     vtb["nickname"],
@@ -98,6 +99,7 @@ async def update_timers(bot, vtb_data, ytb_data):
     for ytb in ytb_data:
         live_info = get_upcoming_youtube_live(ytb["id"])
         if live_info:
+            print(live_info)
             release_time = live_info["release_time"]
             if ytb["id"] not in timers:
                 await add_timer(
