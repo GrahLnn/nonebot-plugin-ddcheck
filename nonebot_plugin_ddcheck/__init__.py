@@ -200,8 +200,8 @@ async def _(
                 break
         if not updated:
             vtb_data.append({"nickname": nickname, "uid": uid, "sub_group": [group_id]})
-        with open(vtb_file, "w", encoding="utf-8") as f:
-            json.dump(vtb_data, f, ensure_ascii=False, indent=4)
+            with open(vtb_file, "w", encoding="utf-8") as f:
+                json.dump(vtb_data, f, ensure_ascii=False, indent=4)
         await update_timers(bot, vtb_data, ytb_data)
         live_info = await get_upcoming_bili_live(uid)
         if live_info:
@@ -274,6 +274,8 @@ async def _(
             result = ydl.extract_info(url, download=False)
         if result:
             ytb_data.append({"nickname": nickname, "id": id, "sub_group": [group_id]})
+            with open(ytb_file, "w", encoding="utf-8") as f:
+                json.dump(ytb_data, f, ensure_ascii=False, indent=4)
             await update_timers(bot, vtb_data, ytb_data)
             live_info = await get_upcoming_youtube_live(id)
             if live_info:
@@ -290,8 +292,6 @@ async def _(
                 )
         else:
             await matcher.finish("频道不存在")
-    with open(ytb_file, "w", encoding="utf-8") as f:
-        json.dump(ytb_data, f, ensure_ascii=False, indent=4)
 
 
 alldd = on_command("alldd", block=True, priority=12)
