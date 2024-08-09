@@ -61,7 +61,8 @@ async def _(
     msg: Message = CommandArg(),
 ):
     if isinstance(event, GroupMessageEvent):
-        print("group message")
+        group_id = event.group_id
+        print(group_id)
     text = msg.extract_plain_text().strip()
     nickname_list = [item["nickname"] for item in alias_data]
     if text in nickname_list:
