@@ -16,7 +16,12 @@ from nonebot.params import CommandArg
 from nonebot.plugin import PluginMetadata, inherit_supported_adapters
 
 
-from .follow import check_timers, update_timers
+from .follow import (
+    check_timers,
+    update_timers,
+    get_upcoming_bili_live,
+    get_upcoming_youtube_live,
+)
 
 require("nonebot_plugin_alconna")
 require("nonebot_plugin_apscheduler")
@@ -78,11 +83,12 @@ except FileNotFoundError:
     ytb_data = []
 
 driver = nonebot.get_driver()
+
+
 @driver.on_bot_connect
 async def _():
     bot = get_bot()
     asyncio.create_task(check_timers(bot, vtb_data, ytb_data))
-
 
 
 ddcheck = on_command("查成分", block=True, priority=12)
@@ -177,7 +183,19 @@ async def _(
                 if group_id not in item["sub_group"]:
                     item["sub_group"].append(group_id)
                 else:
-                    await matcher.finish(f"{nickname}已经在关注了喵")
+                    live_info = await get_upcoming_bili_live(uid)
+                    if live_info:
+                        release_time = live_info["release_time"]
+                        delay = release_time - datetime.datetime.now().timestamp()
+                        time_left = datetime.timedelta(seconds=delay)
+                        formatted_time_left = str(time_left)
+                        await matcher.finish(
+                            f"{nickname}已经在关注了喵，直播时间还有{formatted_time_left}"
+                        )
+                    else:
+                        await matcher.finish(
+                            f"{nickname}已经在关注了喵，{nickname}还没开始播噢，别担心，时间到了我会提醒你的"
+                        )
                 updated = True
                 break
         if not updated:
@@ -185,7 +203,19 @@ async def _(
         with open(vtb_file, "w", encoding="utf-8") as f:
             json.dump(vtb_data, f, ensure_ascii=False, indent=4)
         await update_timers(bot, vtb_data, ytb_data)
-        await matcher.finish(f"关注{nickname}成功喵~")
+        live_info = await get_upcoming_bili_live(uid)
+        if live_info:
+            release_time = live_info["release_time"]
+            delay = release_time - datetime.datetime.now().timestamp()
+            time_left = datetime.timedelta(seconds=delay)
+            formatted_time_left = str(time_left)
+            await matcher.finish(
+                f"关注{nickname}成功喵~，直播时间还有{formatted_time_left}"
+            )
+        else:
+            await matcher.finish(
+                f"关注{nickname}成功喵~, {nickname}还没开始播噢，别担心，时间到了我会提醒你的"
+            )
     except ValueError:
         await matcher.finish("参数错误")
 
@@ -208,7 +238,6 @@ async def _(
         await matcher.finish("加谁的频道？听不见！重来！！")
     try:
         nickname, id = text.split(" ")
-        
     except Exception:
         logger.warning(traceback.format_exc())
         await matcher.finish("加谁的频道？格式错误！重来！！")
@@ -224,7 +253,19 @@ async def _(
             if group_id not in item["sub_group"]:
                 item["sub_group"].append(group_id)
             else:
-                await matcher.finish(f"{nickname}已经在关注了喵")
+                live_info = await get_upcoming_youtube_live(item["id"])
+                if live_info:
+                    release_time = live_info["release_time"]
+                    delay = release_time - datetime.datetime.now().timestamp()
+                    time_left = datetime.timedelta(seconds=delay)
+                    formatted_time_left = str(time_left)
+                    await matcher.finish(
+                        f"{nickname}已经在关注了喵，直播时间还有{formatted_time_left}"
+                    )
+                else:
+                    await matcher.finish(
+                        f"{nickname}已经在关注了喵，{nickname}还没开始播噢，别担心，时间到了我会提醒你的"
+                    )
             updated = True
             break
     if not updated:
@@ -232,11 +273,21 @@ async def _(
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             result = ydl.extract_info(url, download=False)
         if result:
-            ytb_data.append(
-                {"nickname": nickname, "id": id, "sub_group": [group_id]}
-            )
+            ytb_data.append({"nickname": nickname, "id": id, "sub_group": [group_id]})
             await update_timers(bot, vtb_data, ytb_data)
-            await matcher.finish(f"关注{nickname}成功喵~")
+            live_info = await get_upcoming_youtube_live(id)
+            if live_info:
+                release_time = live_info["release_time"]
+                delay = release_time - datetime.datetime.now().timestamp()
+                time_left = datetime.timedelta(seconds=delay)
+                formatted_time_left = str(time_left)
+                await matcher.finish(
+                    f"关注{nickname}成功喵~，直播时间还有{formatted_time_left}"
+                )
+            else:
+                await matcher.finish(
+                    f"关注{nickname}成功喵~, {nickname}还没开始播噢，别担心，时间到了我会提醒你的"
+                )
         else:
             await matcher.finish("频道不存在")
     with open(ytb_file, "w", encoding="utf-8") as f:
