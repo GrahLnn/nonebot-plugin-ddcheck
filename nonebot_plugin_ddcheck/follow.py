@@ -116,7 +116,7 @@ async def update_timers(bot, vtb_data, ytb_data):
 def get_formatted_time_left(release_time):
     delay = release_time - datetime.datetime.now().timestamp()
     if delay <= 0:
-        return "已经开始播了，快去吧！"
+        return "已经上机了，快去吧！"
 
     time_left = datetime.timedelta(seconds=int(delay))
     days, seconds = time_left.days, time_left.seconds
@@ -124,7 +124,7 @@ def get_formatted_time_left(release_time):
     minutes, seconds = divmod(seconds, 60)
 
     if days == 0 and hours == 0 and minutes == 0:
-        return "马上就要播了，快去吧！"
+        return "马上就上机了，快去吧！"
 
     parts = []
     if days > 0:
@@ -137,4 +137,4 @@ def get_formatted_time_left(release_time):
     if len(parts) < 3 and seconds > 0:
         parts.append(f"{seconds}秒")
 
-    return "直播时间还有" + "".join(parts)
+    return "直播还有" + "".join(parts)
