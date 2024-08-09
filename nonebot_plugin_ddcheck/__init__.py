@@ -1,16 +1,20 @@
+import asyncio
+import datetime
 import json
 import os
 import traceback
 from pathlib import Path
 
 import yt_dlp
-from nonebot import on_command, require, get_driver
+from nonebot import get_driver, on_command, require, get_bot
 from nonebot.adapters import Message
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent, Message, MessageEvent
 from nonebot.log import logger
 from nonebot.matcher import Matcher
 from nonebot.params import CommandArg
 from nonebot.plugin import PluginMetadata, inherit_supported_adapters
+
+from .follow import check_timers, update_timers
 
 require("nonebot_plugin_alconna")
 require("nonebot_plugin_apscheduler")
@@ -70,6 +74,11 @@ try:
         ytb_data = json.load(f)
 except FileNotFoundError:
     ytb_data = []
+
+
+bot = get_bot()
+asyncio.create_task(check_timers(bot, vtb_data, ytb_data))
+
 
 ddcheck = on_command("查成分", block=True, priority=12)
 
@@ -152,7 +161,6 @@ async def _(
     if not isinstance(event, GroupMessageEvent):
         await matcher.finish("请在群内使用命令")
     group_id = event.group_id
-    await bot.send_group_msg(group_id=group_id, message="test")
     if not text:
         matcher.block = False
         await matcher.finish("加谁的频道？听不见！重来！！")
@@ -171,6 +179,7 @@ async def _(
             vtb_data.append({"nickname": nickname, "uid": uid, "sub_group": [group_id]})
         with open(vtb_file, "w", encoding="utf-8") as f:
             json.dump(vtb_data, f, ensure_ascii=False, indent=4)
+        await update_timers(bot, vtb_data, ytb_data)
         await matcher.finish(f"关注{nickname}成功喵~")
     except ValueError:
         await matcher.finish("参数错误")
@@ -181,6 +190,7 @@ ytbadd = on_command("ytbadd", block=True, priority=12)
 
 @ytbadd.handle()
 async def _(
+    bot: Bot,
     event: MessageEvent,
     matcher: Matcher,
     msg: Message = CommandArg(),
@@ -219,6 +229,7 @@ async def _(
                 ytb_data.append(
                     {"nickname": nickname, "id": id, "sub_group": [group_id]}
                 )
+                await update_timers(bot, vtb_data, ytb_data)
                 await matcher.finish(f"关注{nickname}成功喵~")
             else:
                 await matcher.finish("频道不存在")
