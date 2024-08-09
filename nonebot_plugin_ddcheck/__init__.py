@@ -141,6 +141,15 @@ async def handle_ddadd(matcher: Matcher, msg: Message = CommandArg()):
 async def handle_add(
     matcher: Matcher, event: MessageEvent, msg: Message, is_youtube: bool
 ):
+    async def handle_live_info(live_info):
+        if live_info:
+            formatted_time_left = get_formatted_time_left(live_info["release_time"])
+            await matcher.finish(f"关注{nickname}成功喵~，{formatted_time_left}")
+        else:
+            await matcher.finish(
+                f"关注{nickname}成功喵~, {nickname}还没开始播噢，别担心，时间到了我会提醒你的"
+            )
+
     if str(event.user_id) not in superusers:
         await matcher.finish("你不是管理员，离开")
     if not isinstance(event, GroupMessageEvent):
@@ -166,8 +175,11 @@ async def handle_add(
         if item["id" if is_youtube else "uid"] == id:
             if group_id not in item["sub_group"]:
                 item["sub_group"].append(group_id)
-                print(data)
                 save_json(file, data)
+                live_info = await (
+                    get_upcoming_youtube_live if is_youtube else get_upcoming_bili_live
+                )(id)
+                await handle_live_info(live_info)
             else:
                 live_info = await (
                     get_upcoming_youtube_live if is_youtube else get_upcoming_bili_live
@@ -207,13 +219,7 @@ async def handle_add(
     live_info = await (
         get_upcoming_youtube_live if is_youtube else get_upcoming_bili_live
     )(id)
-    if live_info:
-        formatted_time_left = get_formatted_time_left(live_info["release_time"])
-        await matcher.finish(f"关注{nickname}成功喵~，{formatted_time_left}")
-    else:
-        await matcher.finish(
-            f"关注{nickname}成功喵~, {nickname}还没开始播噢，别担心，时间到了我会提醒你的"
-        )
+    await handle_live_info(live_info)
 
 
 @vtbadd.handle()
