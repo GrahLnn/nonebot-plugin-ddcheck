@@ -4,17 +4,13 @@ import traceback
 from pathlib import Path
 
 import yt_dlp
-from dotenv import load_dotenv
-from nonebot import on_command, require
+from nonebot import on_command, require, get_driver
 from nonebot.adapters import Message
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent, Message, MessageEvent
 from nonebot.log import logger
 from nonebot.matcher import Matcher
 from nonebot.params import CommandArg
 from nonebot.plugin import PluginMetadata, inherit_supported_adapters
-from .config import ddcheck_config
-
-load_dotenv()
 
 require("nonebot_plugin_alconna")
 require("nonebot_plugin_apscheduler")
@@ -27,7 +23,6 @@ from nonebot_plugin_alconna import UniMessage
 from .config import Config
 from .data_source import get_reply
 
-print(ddcheck_config)
 __plugin_meta__ = PluginMetadata(
     name="成分姬",
     description="查询B站用户关注的VTuber成分",
@@ -40,6 +35,8 @@ __plugin_meta__ = PluginMetadata(
         "example": "查成分 小南莓Official",
     },
 )
+config = get_driver().config
+print(config)
 
 # 获取插件的数据目录路径
 dd_file: Path = store.get_data_file("nonebot_plugin_ddcheck", "dd.json")
