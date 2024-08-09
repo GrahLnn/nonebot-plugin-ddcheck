@@ -9,7 +9,7 @@ homepage = "https://github.com/noneplugin/nonebot-plugin-ddcheck"
 repository = "https://github.com/noneplugin/nonebot-plugin-ddcheck"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.11"
 nonebot2 = "^2.2.0"
 nonebot-plugin-alconna = ">=0.38.0,<1.0.0"
 nonebot-plugin-htmlrender = "^0.3.0"
@@ -19,6 +19,7 @@ bilireq = "^0.2.12"
 httpx = ">=0.20.0,<1.0.0"
 Jinja2 = "^3.0.0"
 yt-dlp = "^2024.8.6"
+bilibili-api = {git = "https://github.com/GrahLnn/bilibili-api.git"}
 
 [tool.pyright]
 pythonVersion = "3.8"
