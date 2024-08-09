@@ -37,7 +37,6 @@ __plugin_meta__ = PluginMetadata(
 )
 config = get_driver().config
 superusers = config.superusers
-print(superusers)
 
 # 获取插件的数据目录路径
 dd_file: Path = store.get_data_file("nonebot_plugin_ddcheck", "dd.json")
@@ -146,7 +145,8 @@ async def _(
     matcher: Matcher,
     msg: Message = CommandArg(),
 ):
-    print(event.user_id)
+    if event.user_id not in superusers:
+        await matcher.finish("你不是管理员，离开")
     text = msg.extract_plain_text().strip()
     if not isinstance(event, GroupMessageEvent):
         await matcher.finish("请在群内使用命令")
@@ -181,6 +181,8 @@ async def _(
     matcher: Matcher,
     msg: Message = CommandArg(),
 ):
+    if event.user_id not in superusers:
+        await matcher.finish("你不是管理员，离开")
     text = msg.extract_plain_text().strip()
     if not text:
         matcher.block = False
