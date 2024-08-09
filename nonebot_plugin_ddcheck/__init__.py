@@ -146,6 +146,7 @@ async def _(
     msg: Message = CommandArg(),
 ):
     if event.user_id not in superusers:
+        print(event.user_id, superusers)
         await matcher.finish("你不是管理员，离开")
     text = msg.extract_plain_text().strip()
     if not isinstance(event, GroupMessageEvent):
