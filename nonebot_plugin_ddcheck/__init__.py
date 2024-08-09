@@ -8,6 +8,7 @@ from nonebot.log import logger
 from nonebot.matcher import Matcher
 from nonebot.params import CommandArg
 from nonebot.plugin import PluginMetadata, inherit_supported_adapters
+from nonebot.adapters.onebot.v11 import MessageEvent, GroupMessageEvent, PrivateMessageEvent
 
 require("nonebot_plugin_alconna")
 require("nonebot_plugin_apscheduler")
@@ -35,6 +36,7 @@ __plugin_meta__ = PluginMetadata(
 
 # 获取插件的数据目录路径
 dd_file: Path = store.get_data_file("nonebot_plugin_ddcheck", "dd.json")
+vtb_file: Path = store.get_data_file("nonebot_plugin_ddcheck", "vtb.json")
 
 # 尝试从 localstore 加载 dd.json 的数据，如果不存在则初始化为空列表
 try:
@@ -42,6 +44,12 @@ try:
         alias_data = json.load(f)
 except FileNotFoundError:
     alias_data = []
+
+try:
+    with open(vtb_file, encoding="utf-8") as f:
+        vtb_data = json.load(f)
+except FileNotFoundError:
+    vtb_data = []
 
 ddcheck = on_command("查成分", block=True, priority=12)
 
@@ -51,6 +59,9 @@ async def _(
     matcher: Matcher,
     msg: Message = CommandArg(),
 ):
+    event = matcher.event
+    if isinstance(event, GroupMessageEvent):
+        print("group message")
     text = msg.extract_plain_text().strip()
     nickname_list = [item["nickname"] for item in alias_data]
     if text in nickname_list:
@@ -108,6 +119,28 @@ async def _(
         await matcher.finish("参数错误")
 
 
+vtbadd = on_command("vtbadd", block=True, priority=12)
+
+
+@vtbadd.handle()
+async def _(
+    matcher: Matcher,
+    msg: Message = CommandArg(),
+):
+    text = msg.extract_plain_text().strip()
+    if not text:
+        matcher.block = False
+        await matcher.finish()
+    try:
+        nickname, uid = text.split(" ")
+        vtb_data.append({"nickname": nickname, "uid": uid})
+        with open(vtb_file, "w", encoding="utf-8") as f:
+            json.dump(vtb_data, f, ensure_ascii=False, indent=4)
+        await matcher.finish(f"关注{nickname}成功喵~")
+    except ValueError:
+        await matcher.finish("参数错误")
+
+
 alldd = on_command("alldd", block=True, priority=12)
 
 
@@ -119,6 +152,7 @@ async def _(
     for item in alias_data:
         text += f"{item['nickname']} -> {item['uid']}\n"
     await matcher.finish(text)
+
 
 rmdd = on_command("rmdd", block=True, priority=12)
 
@@ -140,4 +174,3 @@ async def _(
                 json.dump(alias_data, f, ensure_ascii=False, indent=4)
             await matcher.finish("删除成功")
             break
-
