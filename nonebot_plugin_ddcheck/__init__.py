@@ -36,7 +36,7 @@ __plugin_meta__ = PluginMetadata(
     },
 )
 config = get_driver().config
-superusers = config.superusers
+superusers = list(config.superusers)
 
 # 获取插件的数据目录路径
 dd_file: Path = store.get_data_file("nonebot_plugin_ddcheck", "dd.json")
