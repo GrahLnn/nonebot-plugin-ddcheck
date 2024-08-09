@@ -8,7 +8,7 @@ from nonebot.log import logger
 from nonebot.matcher import Matcher
 from nonebot.params import CommandArg
 from nonebot.plugin import PluginMetadata, inherit_supported_adapters
-from nonebot.adapters.onebot.v11 import MessageEvent, GroupMessageEvent, PrivateMessageEvent
+from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent, Message, MessageEvent
 
 require("nonebot_plugin_alconna")
 require("nonebot_plugin_apscheduler")
@@ -56,10 +56,10 @@ ddcheck = on_command("查成分", block=True, priority=12)
 
 @ddcheck.handle()
 async def _(
+    event: MessageEvent,
     matcher: Matcher,
     msg: Message = CommandArg(),
 ):
-    event = matcher.event
     if isinstance(event, GroupMessageEvent):
         print("group message")
     text = msg.extract_plain_text().strip()
