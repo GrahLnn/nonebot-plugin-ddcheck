@@ -63,26 +63,32 @@ ydl_opts = {
     "quiet": True,
 }
 
+
+def load_json(file: Path, default=[]):
+    try:
+        with open(file, encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return default
+
+
+def save_json(file: Path, data):
+    with open(file, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+
+
 # 尝试从 localstore 加载 dd.json 的数据，如果不存在则初始化为空列表
-try:
-    with open(dd_file, encoding="utf-8") as f:
-        alias_data = json.load(f)
-except FileNotFoundError:
-    alias_data = []
-
-try:
-    with open(vtb_file, encoding="utf-8") as f:
-        vtb_data = json.load(f)
-except FileNotFoundError:
-    vtb_data = []
-
-try:
-    with open(ytb_file, encoding="utf-8") as f:
-        ytb_data = json.load(f)
-except FileNotFoundError:
-    ytb_data = []
+alias_data = load_json(dd_file)
+vtb_data = load_json(vtb_file)
+ytb_data = load_json(ytb_file)
 
 driver = nonebot.get_driver()
+ddcheck = on_command("查成分", block=True, priority=12)
+ddadd = on_command("adddd", block=True, priority=12)
+vtbadd = on_command("vtbadd", block=True, priority=12)
+ytbadd = on_command("ytbadd", block=True, priority=12)
+alldd = on_command("alldd", block=True, priority=12)
+rmdd = on_command("rmdd", block=True, priority=12)
 
 
 @driver.on_bot_connect
@@ -91,166 +97,84 @@ async def _():
     asyncio.create_task(check_timers(bot, vtb_data, ytb_data))
 
 
-ddcheck = on_command("查成分", block=True, priority=12)
-
-
 @ddcheck.handle()
-async def _(
-    matcher: Matcher,
-    msg: Message = CommandArg(),
-):
+async def handle_ddcheck(matcher: Matcher, msg: Message = CommandArg()):
     text = msg.extract_plain_text().strip()
-    nickname_list = [item["nickname"] for item in alias_data]
-    if text in nickname_list:
-        text = alias_data[nickname_list.index(text)]["uid"]
+    text = next((item["uid"] for item in alias_data if item["nickname"] == text), text)
+
     if not text:
         matcher.block = False
         await matcher.finish()
 
     try:
         result = await get_reply(text)
+        if isinstance(result, str):
+            await matcher.finish(result)
+        await UniMessage.image(raw=result).send()
     except Exception:
         logger.warning(traceback.format_exc())
         await matcher.finish("出错了，请稍后再试")
 
-    if isinstance(result, str):
-        await matcher.finish(result)
-
-    await UniMessage.image(raw=result).send()
-
-
-ddadd = on_command("adddd", block=True, priority=12)
-
 
 @ddadd.handle()
-async def _(
-    matcher: Matcher,
-    msg: Message = CommandArg(),
-):
+async def handle_ddadd(matcher: Matcher, msg: Message = CommandArg()):
     text = msg.extract_plain_text().strip()
-
     if not text:
         matcher.block = False
         await matcher.finish("查谁的成分？听不见！重来！！")
 
     try:
         nickname, uid = text.split(" ")
-        # 检查是否存在相同的 nickname
-        updated = False
         for item in alias_data:
             if item["nickname"] == nickname:
                 item["uid"] = uid
-                updated = True
                 break
-
-        # 如果不存在相同的 nickname，则添加新条目
-        if not updated:
+        else:
             alias_data.append({"nickname": nickname, "uid": uid})
 
-        # 保存更新后的数据到 localstore
-        with open(dd_file, "w", encoding="utf-8") as f:
-            json.dump(alias_data, f, ensure_ascii=False, indent=4)
-
+        save_json(dd_file, alias_data)
         await matcher.finish("更新成功")
     except ValueError:
         await matcher.finish("参数错误")
 
 
-vtbadd = on_command("vtbadd", block=True, priority=12)
-
-
-@vtbadd.handle()
-async def _(
-    bot: Bot,
-    event: MessageEvent,
-    matcher: Matcher,
-    msg: Message = CommandArg(),
+async def handle_add(
+    matcher: Matcher, event: MessageEvent, msg: Message, is_youtube: bool
 ):
     if str(event.user_id) not in superusers:
         await matcher.finish("你不是管理员，离开")
-    text = msg.extract_plain_text().strip()
     if not isinstance(event, GroupMessageEvent):
         await matcher.finish("请在群内使用命令")
-    group_id = event.group_id
+
+    text = msg.extract_plain_text().strip()
     if not text:
         matcher.block = False
         await matcher.finish("加谁的频道？听不见！重来！！")
+
     try:
-        nickname, uid = text.split(" ")
-        updated = False
-        for item in vtb_data:
-            if item["uid"] == uid:
-                if group_id not in item["sub_group"]:
-                    item["sub_group"].append(group_id)
-                else:
-                    live_info = await get_upcoming_bili_live(uid)
-                    if live_info:
-                        release_time = live_info["release_time"]
-                        formatted_time_left = get_formatted_time_left(release_time)
-                        await matcher.finish(
-                            f"{nickname}已经在关注了喵，{formatted_time_left}"
-                        )
-                    else:
-                        await matcher.finish(
-                            f"{nickname}已经在关注了喵，{nickname}还没开始播噢，别担心，时间到了我会提醒你的"
-                        )
-                updated = True
-                break
-        if not updated:
-            vtb_data.append({"nickname": nickname, "uid": uid, "sub_group": [group_id]})
-            with open(vtb_file, "w", encoding="utf-8") as f:
-                json.dump(vtb_data, f, ensure_ascii=False, indent=4)
-        await update_timers(bot, vtb_data, ytb_data)
-        live_info = await get_upcoming_bili_live(uid)
-        if live_info:
-            release_time = live_info["release_time"]
-            formatted_time_left = get_formatted_time_left(release_time)
-            await matcher.finish(f"关注{nickname}成功喵~，{formatted_time_left}")
-        else:
-            await matcher.finish(
-                f"关注{nickname}成功喵~, {nickname}还没开始播噢，别担心，时间到了我会提醒你的"
-            )
+        nickname, id = text.split(" ")
+        if is_youtube and not id.startswith("@"):
+            id = "@" + id
     except ValueError:
         await matcher.finish("参数错误")
 
-
-ytbadd = on_command("ytbadd", block=True, priority=12)
-
-
-@ytbadd.handle()
-async def _(
-    bot: Bot,
-    event: MessageEvent,
-    matcher: Matcher,
-    msg: Message = CommandArg(),
-):
-    if str(event.user_id) not in superusers:
-        await matcher.finish("你不是管理员，离开")
-    text = msg.extract_plain_text().strip()
-    if not text:
-        matcher.block = False
-        await matcher.finish("加谁的频道？听不见！重来！！")
-    try:
-        nickname, id = text.split(" ")
-    except Exception:
-        logger.warning(traceback.format_exc())
-        await matcher.finish("加谁的频道？格式错误！重来！！")
-    if not isinstance(event, GroupMessageEvent):
-        await matcher.finish("请在群内使用命令")
     group_id = event.group_id
-    if not id.startswith("@"):
-        id = "@" + id
+    data = ytb_data if is_youtube else vtb_data
+    file = ytb_file if is_youtube else vtb_file
 
-    updated = False
-    for item in ytb_data:
-        if item["id"] == id:
+    for item in data:
+        if item["id" if is_youtube else "uid"] == id:
             if group_id not in item["sub_group"]:
                 item["sub_group"].append(group_id)
+                save_json(file, data)
             else:
-                live_info = await get_upcoming_youtube_live(item["id"])
+                live_info = await (
+                    get_upcoming_youtube_live if is_youtube else get_upcoming_bili_live
+                )(id)
                 if live_info:
-                    release_time = live_info["release_time"]
-                    formatted_time_left = get_formatted_time_left(release_time)
+                    formatted_time_left = get_formatted_time_left(
+                        live_info["release_time"]
+                    )
                     await matcher.finish(
                         f"{nickname}已经在关注了喵，{formatted_time_left}"
                     )
@@ -258,52 +182,61 @@ async def _(
                     await matcher.finish(
                         f"{nickname}已经在关注了喵，{nickname}还没开始播噢，别担心，时间到了我会提醒你的"
                     )
-            updated = True
-            break
-    if not updated:
+            return
+
+    if is_youtube:
         url = f"https://www.youtube.com/{id}/streams"
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             result = ydl.extract_info(url, download=False)
-        if result:
-            ytb_data.append({"nickname": nickname, "id": id, "sub_group": [group_id]})
-            with open(ytb_file, "w", encoding="utf-8") as f:
-                json.dump(ytb_data, f, ensure_ascii=False, indent=4)
-            await update_timers(bot, vtb_data, ytb_data)
-            live_info = await get_upcoming_youtube_live(id)
-            if live_info:
-                release_time = live_info["release_time"]
-                await matcher.finish(
-                    f"关注{nickname}成功喵~，{get_formatted_time_left(release_time)}"
-                )
-            else:
-                await matcher.finish(
-                    f"关注{nickname}成功喵~, {nickname}还没开始播噢，别担心，时间到了我会提醒你的"
-                )
-        else:
+        if not result:
             await matcher.finish("频道不存在")
 
+    data.append(
+        {
+            "nickname": nickname,
+            "id" if is_youtube else "uid": id,
+            "sub_group": [group_id],
+        }
+    )
+    save_json(file, data)
 
-alldd = on_command("alldd", block=True, priority=12)
+    bot = get_bot()
+    await update_timers(bot, vtb_data, ytb_data)
+
+    live_info = await (
+        get_upcoming_youtube_live if is_youtube else get_upcoming_bili_live
+    )(id)
+    if live_info:
+        formatted_time_left = get_formatted_time_left(live_info["release_time"])
+        await matcher.finish(f"关注{nickname}成功喵~，{formatted_time_left}")
+    else:
+        await matcher.finish(
+            f"关注{nickname}成功喵~, {nickname}还没开始播噢，别担心，时间到了我会提醒你的"
+        )
+
+
+@vtbadd.handle()
+async def handle_vtbadd(
+    matcher: Matcher, event: MessageEvent, msg: Message = CommandArg()
+):
+    await handle_add(matcher, event, msg, is_youtube=False)
+
+
+@ytbadd.handle()
+async def handle_ytbadd(
+    matcher: Matcher, event: MessageEvent, msg: Message = CommandArg()
+):
+    await handle_add(matcher, event, msg, is_youtube=True)
 
 
 @alldd.handle()
-async def _(
-    matcher: Matcher,
-):
-    text = ""
-    for item in alias_data:
-        text += f"{item['nickname']} -> {item['uid']}\n"
+async def handle_alldd(matcher: Matcher):
+    text = "\n".join(f"{item['nickname']} -> {item['uid']}" for item in alias_data)
     await matcher.finish(text)
 
 
-rmdd = on_command("rmdd", block=True, priority=12)
-
-
 @rmdd.handle()
-async def _(
-    matcher: Matcher,
-    msg: Message = CommandArg(),
-):
+async def handle_rmdd(matcher: Matcher, msg: Message = CommandArg()):
     text = msg.extract_plain_text().strip()
     if not text:
         matcher.block = False
@@ -312,7 +245,6 @@ async def _(
     for item in alias_data:
         if item["nickname"] == text:
             alias_data.remove(item)
-            with open(dd_file, "w", encoding="utf-8") as f:
-                json.dump(alias_data, f, ensure_ascii=False, indent=4)
+            save_json(dd_file, alias_data)
             await matcher.finish("删除成功")
             break
