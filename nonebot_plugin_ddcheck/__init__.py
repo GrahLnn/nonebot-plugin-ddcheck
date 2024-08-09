@@ -4,15 +4,17 @@ import json
 import os
 import traceback
 from pathlib import Path
+import nonebot
 
 import yt_dlp
-from nonebot import get_driver, on_command, require, get_bot, on_startup
+from nonebot import get_driver, on_command, require, get_bot
 from nonebot.adapters import Message
-from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent, Message, MessageEvent
+from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent, MessageEvent
 from nonebot.log import logger
 from nonebot.matcher import Matcher
 from nonebot.params import CommandArg
 from nonebot.plugin import PluginMetadata, inherit_supported_adapters
+
 
 from .follow import check_timers, update_timers
 
@@ -75,14 +77,12 @@ try:
 except FileNotFoundError:
     ytb_data = []
 
-
-@on_startup
+driver = nonebot.get_driver()
+@driver.on_startup
 async def _():
     bot = get_bot()
     await check_timers(bot, vtb_data, ytb_data)
 
-
-asyncio.create_task(check_timers(bot, vtb_data, ytb_data))
 
 
 ddcheck = on_command("查成分", block=True, priority=12)
