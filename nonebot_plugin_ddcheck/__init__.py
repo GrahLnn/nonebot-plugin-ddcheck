@@ -87,8 +87,22 @@ ddcheck = on_command("查成分", block=True, priority=12)
 ddadd = on_command("adddd", block=True, priority=12)
 vtbadd = on_command("vtbadd", block=True, priority=12)
 ytbadd = on_command("ytbadd", block=True, priority=12)
+vtbrm = on_command("vtbrm", block=True, priority=12)
+ytbrm = on_command("ytbrm", block=True, priority=12)
 alldd = on_command("alldd", block=True, priority=12)
 rmdd = on_command("rmdd", block=True, priority=12)
+whenlive = on_command(
+    "主包什么时候播",
+    aliases={
+        "什么时候播",
+        "什么时候开播",
+        "什么时候直播",
+        "主播什么时候播",
+        "when streaming",
+    },
+    block=True,
+    priority=12,
+)
 
 
 @driver.on_bot_connect
@@ -255,3 +269,27 @@ async def handle_rmdd(matcher: Matcher, msg: Message = CommandArg()):
             save_json(dd_file, alias_data)
             await matcher.finish("删除成功")
             break
+
+
+@whenlive.handle()
+async def handle_whenlive(matcher: Matcher, msg: Message = CommandArg()):
+    records = []
+    for item in vtb_data:
+        live_info = await get_upcoming_bili_live(item["uid"])
+        if live_info:
+            records.append(
+                f"{item['nickname']}的b限{get_formatted_time_left(live_info['release_time'])}"
+            )
+        else:
+            records.append(f"{item['nickname']}还没有发布bilibili的直播计划")
+    for item in ytb_data:
+        live_info = await get_upcoming_youtube_live(item["id"])
+        if live_info:
+            records.append(
+                f"{item['nickname']}的youtube{get_formatted_time_left(live_info['release_time'])}"
+            )
+        else:
+            records.append(f"{item['nickname']}还没有发布youtube的直播计划")
+    if not records:
+        await matcher.finish("还没有关注任何人")
+    await matcher.finish("\n".join(records))
