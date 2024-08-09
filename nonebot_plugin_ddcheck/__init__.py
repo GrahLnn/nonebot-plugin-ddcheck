@@ -4,10 +4,10 @@ import json
 import os
 import traceback
 from pathlib import Path
-import nonebot
 
+import nonebot
 import yt_dlp
-from nonebot import get_driver, on_command, require, get_bot
+from nonebot import get_bot, get_driver, on_command, require
 from nonebot.adapters import Message
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent, MessageEvent
 from nonebot.log import logger
@@ -15,12 +15,12 @@ from nonebot.matcher import Matcher
 from nonebot.params import CommandArg
 from nonebot.plugin import PluginMetadata, inherit_supported_adapters
 
-
 from .follow import (
     check_timers,
-    update_timers,
+    get_formatted_time_left,
     get_upcoming_bili_live,
     get_upcoming_youtube_live,
+    update_timers,
 )
 
 require("nonebot_plugin_alconna")
@@ -186,11 +186,9 @@ async def _(
                     live_info = await get_upcoming_bili_live(uid)
                     if live_info:
                         release_time = live_info["release_time"]
-                        delay = release_time - datetime.datetime.now().timestamp()
-                        time_left = datetime.timedelta(seconds=delay)
-                        formatted_time_left = str(time_left)
+                        formatted_time_left = get_formatted_time_left(release_time)
                         await matcher.finish(
-                            f"{nickname}已经在关注了喵，直播时间还有{formatted_time_left}"
+                            f"{nickname}已经在关注了喵，{formatted_time_left}"
                         )
                     else:
                         await matcher.finish(
@@ -206,12 +204,8 @@ async def _(
         live_info = await get_upcoming_bili_live(uid)
         if live_info:
             release_time = live_info["release_time"]
-            delay = release_time - datetime.datetime.now().timestamp()
-            time_left = datetime.timedelta(seconds=delay)
-            formatted_time_left = str(time_left)
-            await matcher.finish(
-                f"关注{nickname}成功喵~，直播时间还有{formatted_time_left}"
-            )
+            formatted_time_left = get_formatted_time_left(release_time)
+            await matcher.finish(f"关注{nickname}成功喵~，{formatted_time_left}")
         else:
             await matcher.finish(
                 f"关注{nickname}成功喵~, {nickname}还没开始播噢，别担心，时间到了我会提醒你的"
@@ -256,11 +250,9 @@ async def _(
                 live_info = await get_upcoming_youtube_live(item["id"])
                 if live_info:
                     release_time = live_info["release_time"]
-                    delay = release_time - datetime.datetime.now().timestamp()
-                    time_left = datetime.timedelta(seconds=delay)
-                    formatted_time_left = str(time_left)
+                    formatted_time_left = get_formatted_time_left(release_time)
                     await matcher.finish(
-                        f"{nickname}已经在关注了喵，直播时间还有{formatted_time_left}"
+                        f"{nickname}已经在关注了喵，{formatted_time_left}"
                     )
                 else:
                     await matcher.finish(
@@ -280,11 +272,8 @@ async def _(
             live_info = await get_upcoming_youtube_live(id)
             if live_info:
                 release_time = live_info["release_time"]
-                delay = release_time - datetime.datetime.now().timestamp()
-                time_left = datetime.timedelta(seconds=delay)
-                formatted_time_left = str(time_left)
                 await matcher.finish(
-                    f"关注{nickname}成功喵~，直播时间还有{formatted_time_left}"
+                    f"关注{nickname}成功喵~，{get_formatted_time_left(release_time)}"
                 )
             else:
                 await matcher.finish(

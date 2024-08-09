@@ -86,10 +86,7 @@ async def update_timers(bot, vtb_data, ytb_data):
         live_info = await get_upcoming_bili_live(vtb["uid"])
         if live_info:
             release_time = live_info["release_time"]
-            delay = release_time - datetime.datetime.now().timestamp()
-            time_left = datetime.timedelta(seconds=delay)
-            formatted_time_left = str(time_left)
-            logger.info(f"{vtb['nickname']}的直播时间还有: {formatted_time_left}")
+            logger.info(f"{vtb['nickname']}, {get_formatted_time_left(release_time)}")
             if vtb["uid"] not in timers:
                 await add_timer(
                     vtb["nickname"],
@@ -104,10 +101,7 @@ async def update_timers(bot, vtb_data, ytb_data):
         live_info = await get_upcoming_youtube_live(ytb["id"])
         if live_info:
             release_time = live_info["release_time"]
-            delay = release_time - datetime.datetime.now().timestamp()
-            time_left = datetime.timedelta(seconds=delay)
-            formatted_time_left = str(time_left)
-            logger.info(f"{ytb['nickname']}的直播时间还有: {formatted_time_left}")
+            logger.info(f"{ytb['nickname']}, {get_formatted_time_left(release_time)}")
             if ytb["id"] not in timers:
                 await add_timer(
                     ytb["nickname"],
@@ -117,3 +111,30 @@ async def update_timers(bot, vtb_data, ytb_data):
                     live_info["url"],
                     bot,
                 )
+
+
+def get_formatted_time_left(release_time):
+    delay = release_time - datetime.datetime.now().timestamp()
+    if delay <= 0:
+        return "已经开始播了，快去吧！"
+
+    time_left = datetime.timedelta(seconds=int(delay))
+    days, seconds = time_left.days, time_left.seconds
+    hours, seconds = divmod(seconds, 3600)
+    minutes, seconds = divmod(seconds, 60)
+
+    if days == 0 and hours == 0 and minutes == 0:
+        return "马上就要播了，快去吧！"
+
+    parts = []
+    if days > 0:
+        parts.append(f"{days}天")
+    if hours > 0:
+        parts.append(f"{hours}小时")
+    if minutes > 0:
+        parts.append(f"{minutes}分钟")
+
+    if len(parts) < 3 and seconds > 0:
+        parts.append(f"{seconds}秒")
+
+    return "直播时间还有" + "".join(parts)
