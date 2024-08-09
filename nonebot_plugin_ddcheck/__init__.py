@@ -6,7 +6,7 @@ import traceback
 from pathlib import Path
 
 import yt_dlp
-from nonebot import get_driver, on_command, require, get_bot
+from nonebot import get_driver, on_command, require, get_bot, on_startup
 from nonebot.adapters import Message
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent, Message, MessageEvent
 from nonebot.log import logger
@@ -76,7 +76,12 @@ except FileNotFoundError:
     ytb_data = []
 
 
-bot = get_bot()
+@on_startup
+async def _():
+    bot = get_bot()
+    await check_timers(bot, vtb_data, ytb_data)
+
+
 asyncio.create_task(check_timers(bot, vtb_data, ytb_data))
 
 
