@@ -141,17 +141,18 @@ vtbadd = on_command("vtbadd", block=True, priority=12)
 
 @vtbadd.handle()
 async def _(
+    bot: Bot,
     event: MessageEvent,
     matcher: Matcher,
     msg: Message = CommandArg(),
 ):
     if str(event.user_id) not in superusers:
-        print(event.user_id, superusers)
         await matcher.finish("你不是管理员，离开")
     text = msg.extract_plain_text().strip()
     if not isinstance(event, GroupMessageEvent):
         await matcher.finish("请在群内使用命令")
     group_id = event.group_id
+    await bot.send_group_msg(group_id=group_id, message="test")
     if not text:
         matcher.block = False
         await matcher.finish("加谁的频道？听不见！重来！！")
@@ -162,6 +163,8 @@ async def _(
             if item["uid"] == uid:
                 if group_id not in item["sub_group"]:
                     item["sub_group"].append(group_id)
+                else:
+                    await matcher.finish(f"{nickname}已经在关注了喵")
                 updated = True
                 break
         if not updated:
@@ -182,7 +185,7 @@ async def _(
     matcher: Matcher,
     msg: Message = CommandArg(),
 ):
-    if event.user_id not in superusers:
+    if str(event.user_id) not in superusers:
         await matcher.finish("你不是管理员，离开")
     text = msg.extract_plain_text().strip()
     if not text:
@@ -204,6 +207,8 @@ async def _(
             if item["id"] == id:
                 if group_id not in item["sub_group"]:
                     item["sub_group"].append(group_id)
+                else:
+                    await matcher.finish(f"{nickname}已经在关注了喵")
                 updated = True
                 break
         if not updated:
@@ -211,7 +216,9 @@ async def _(
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 result = ydl.extract_info(url, download=False)
             if result:
-                ytb_data.append({"nickname": nickname, "id": id, "sub_group": [group_id]})
+                ytb_data.append(
+                    {"nickname": nickname, "id": id, "sub_group": [group_id]}
+                )
                 await matcher.finish(f"关注{nickname}成功喵~")
             else:
                 await matcher.finish("频道不存在")
@@ -221,7 +228,6 @@ async def _(
     except Exception:
         logger.warning(traceback.format_exc())
         await matcher.finish("出错了，请稍后再试")
-
 
 
 alldd = on_command("alldd", block=True, priority=12)
