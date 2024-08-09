@@ -3,7 +3,8 @@ import datetime
 import json
 
 import yt_dlp
-from bilibili_api import sync, user
+from bilibili_api import user
+from nonebot.log import logger
 
 timers = {}
 
@@ -85,7 +86,8 @@ async def update_timers(bot, vtb_data, ytb_data):
         live_info = await get_upcoming_bili_live(vtb["uid"])
         if live_info:
             release_time = live_info["release_time"]
-            print(live_info)
+            delay = release_time - datetime.datetime.now().timestamp()
+            logger.info(f"{vtb['nickname']}的直播时间还有: {delay}")
             if vtb["uid"] not in timers:
                 await add_timer(
                     vtb["nickname"],
@@ -99,8 +101,9 @@ async def update_timers(bot, vtb_data, ytb_data):
     for ytb in ytb_data:
         live_info = await get_upcoming_youtube_live(ytb["id"])
         if live_info:
-            print(live_info)
             release_time = live_info["release_time"]
+            delay = release_time - datetime.datetime.now().timestamp()
+            logger.info(f"{ytb['nickname']}的直播时间还有: {delay}")
             if ytb["id"] not in timers:
                 await add_timer(
                     ytb["nickname"],
