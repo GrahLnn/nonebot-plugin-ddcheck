@@ -208,42 +208,39 @@ async def _(
         await matcher.finish("加谁的频道？听不见！重来！！")
     try:
         nickname, id = text.split(" ")
-        if not isinstance(event, GroupMessageEvent):
-            await matcher.finish("请在群内使用命令")
-        group_id = event.group_id
-        if not id:
-            matcher.block = False
-            await matcher.finish("加谁的频道？格式错误！重来！！")
-        if not id.startswith("@"):
-            id = "@" + id
-
-        updated = False
-        for item in ytb_data:
-            if item["id"] == id:
-                if group_id not in item["sub_group"]:
-                    item["sub_group"].append(group_id)
-                else:
-                    await matcher.finish(f"{nickname}已经在关注了喵")
-                updated = True
-                break
-        if not updated:
-            url = f"https://www.youtube.com/{id}/streams"
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                result = ydl.extract_info(url, download=False)
-            if result:
-                ytb_data.append(
-                    {"nickname": nickname, "id": id, "sub_group": [group_id]}
-                )
-                await update_timers(bot, vtb_data, ytb_data)
-                await matcher.finish(f"关注{nickname}成功喵~")
-            else:
-                await matcher.finish("频道不存在")
-        with open(ytb_file, "w", encoding="utf-8") as f:
-            json.dump(ytb_data, f, ensure_ascii=False, indent=4)
-
+        
     except Exception:
         logger.warning(traceback.format_exc())
-        await matcher.finish("出错了，请稍后再试")
+        await matcher.finish("加谁的频道？格式错误！重来！！")
+    if not isinstance(event, GroupMessageEvent):
+        await matcher.finish("请在群内使用命令")
+    group_id = event.group_id
+    if not id.startswith("@"):
+        id = "@" + id
+
+    updated = False
+    for item in ytb_data:
+        if item["id"] == id:
+            if group_id not in item["sub_group"]:
+                item["sub_group"].append(group_id)
+            else:
+                await matcher.finish(f"{nickname}已经在关注了喵")
+            updated = True
+            break
+    if not updated:
+        url = f"https://www.youtube.com/{id}/streams"
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            result = ydl.extract_info(url, download=False)
+        if result:
+            ytb_data.append(
+                {"nickname": nickname, "id": id, "sub_group": [group_id]}
+            )
+            await update_timers(bot, vtb_data, ytb_data)
+            await matcher.finish(f"关注{nickname}成功喵~")
+        else:
+            await matcher.finish("频道不存在")
+    with open(ytb_file, "w", encoding="utf-8") as f:
+        json.dump(ytb_data, f, ensure_ascii=False, indent=4)
 
 
 alldd = on_command("alldd", block=True, priority=12)
