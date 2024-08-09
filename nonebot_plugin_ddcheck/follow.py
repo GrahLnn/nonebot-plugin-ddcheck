@@ -87,7 +87,9 @@ async def update_timers(bot, vtb_data, ytb_data):
         if live_info:
             release_time = live_info["release_time"]
             delay = release_time - datetime.datetime.now().timestamp()
-            logger.info(f"{vtb['nickname']}的直播时间还有: {delay}")
+            time_left = datetime.timedelta(seconds=delay)
+            formatted_time_left = str(time_left)
+            logger.info(f"{vtb['nickname']}的直播时间还有: {formatted_time_left}")
             if vtb["uid"] not in timers:
                 await add_timer(
                     vtb["nickname"],
@@ -103,7 +105,9 @@ async def update_timers(bot, vtb_data, ytb_data):
         if live_info:
             release_time = live_info["release_time"]
             delay = release_time - datetime.datetime.now().timestamp()
-            logger.info(f"{ytb['nickname']}的直播时间还有: {delay}")
+            time_left = datetime.timedelta(seconds=delay)
+            formatted_time_left = str(time_left)
+            logger.info(f"{ytb['nickname']}的直播时间还有: {formatted_time_left}")
             if ytb["id"] not in timers:
                 await add_timer(
                     ytb["nickname"],
