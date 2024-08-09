@@ -81,7 +81,7 @@ driver = nonebot.get_driver()
 @driver.on_bot_connect
 async def _():
     bot = get_bot()
-    await check_timers(bot, vtb_data, ytb_data)
+    asyncio.create_task(check_timers(bot, vtb_data, ytb_data))
 
 
 
