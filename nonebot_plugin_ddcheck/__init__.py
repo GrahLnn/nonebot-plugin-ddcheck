@@ -40,7 +40,7 @@ __plugin_meta__ = PluginMetadata(
         "example": "查成分 小南莓Official",
     },
 )
-SUPERUSERS = os.getenv("SUPERUSERS").split(",")
+
 # 获取插件的数据目录路径
 dd_file: Path = store.get_data_file("nonebot_plugin_ddcheck", "dd.json")
 vtb_file: Path = store.get_data_file("nonebot_plugin_ddcheck", "vtb.json")
