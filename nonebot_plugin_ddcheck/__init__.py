@@ -166,6 +166,7 @@ async def handle_add(
         if item["id" if is_youtube else "uid"] == id:
             if group_id not in item["sub_group"]:
                 item["sub_group"].append(group_id)
+                print(data)
                 save_json(file, data)
             else:
                 live_info = await (
