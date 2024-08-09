@@ -9,12 +9,12 @@ timers = {}
 
 
 # 获取B站直播预约信息
-def get_upcoming_bili_live(uid):
+async def get_upcoming_bili_live(uid):
     u = user.User(uid)
-    data = sync(u.get_reservation())
+    data = await u.get_reservation()
 
     if data:
-        space_info = sync(u.get_live_info())
+        space_info = await u.get_live_info()
         live_room_rul = space_info["live_room"]["url"]
         dt_object = data[0]["live_plan_start_time"]
         return {
@@ -26,7 +26,7 @@ def get_upcoming_bili_live(uid):
 
 
 # 获取YouTube直播预约信息
-def get_upcoming_youtube_live(ytber):
+async def get_upcoming_youtube_live(ytber):
     channel_url = f"https://www.youtube.com/{ytber}/streams"
     ydl_opts = {
         "flat_playlist": True,
@@ -82,7 +82,7 @@ async def check_timers(bot, vtb_data, ytb_data):
 
 async def update_timers(bot, vtb_data, ytb_data):
     for vtb in vtb_data:
-        live_info = get_upcoming_bili_live(vtb["uid"])
+        live_info = await get_upcoming_bili_live(vtb["uid"])
         if live_info:
             release_time = live_info["release_time"]
             print(live_info)
@@ -97,7 +97,7 @@ async def update_timers(bot, vtb_data, ytb_data):
                 )
 
     for ytb in ytb_data:
-        live_info = get_upcoming_youtube_live(ytb["id"])
+        live_info = await get_upcoming_youtube_live(ytb["id"])
         if live_info:
             print(live_info)
             release_time = live_info["release_time"]
