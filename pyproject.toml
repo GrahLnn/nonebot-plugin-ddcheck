@@ -19,9 +19,6 @@ bilireq = "^0.2.12"
 httpx = ">=0.20.0,<1.0.0"
 Jinja2 = "^3.0.0"
 yt-dlp = "^2024.8.6"
-python-dotenv = "^1.0.1"
-
-[tool.poetry.group.dev.dependencies]
 
 [tool.pyright]
 pythonVersion = "3.8"
