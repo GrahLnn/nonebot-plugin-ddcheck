@@ -94,6 +94,7 @@ rmdd = on_command("rmdd", block=True, priority=12)
 whenlive = on_command(
     "主包什么时候播",
     aliases={
+        "等不及了"
         "什么时候播",
         "什么时候开播",
         "什么时候直播",
