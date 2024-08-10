@@ -278,18 +278,18 @@ async def handle_whenlive(matcher: Matcher, msg: Message = CommandArg()):
         live_info = await get_upcoming_bili_live(item["uid"])
         if live_info:
             records.append(
-                f"{item['nickname']}的b限{get_formatted_time_left(live_info['release_time'])}"
+                f"{item['nickname']}{get_formatted_time_left(live_info['release_time'])}(bilibili)"
             )
         else:
-            records.append(f"{item['nickname']}还没有发布bilibili的直播计划")
+            records.append(f"{item['nickname']}还没有发布bilibili的直播预告")
     for item in ytb_data:
         live_info = await get_upcoming_youtube_live(item["id"])
         if live_info:
             records.append(
-                f"{item['nickname']}的ytb{get_formatted_time_left(live_info['release_time'])}"
+                f"{item['nickname']}{get_formatted_time_left(live_info['release_time'])}(youtube)"
             )
         else:
-            records.append(f"{item['nickname']}还没有发布youtube的直播计划")
+            records.append(f"{item['nickname']}还没有发布youtube的直播预告")
     if not records:
         await matcher.finish("还没有关注任何人呢，杂古")
     await matcher.finish("\n".join(records))

@@ -134,7 +134,7 @@ def get_formatted_time_left(release_time):
     if minutes > 0:
         parts.append(f"{minutes}分钟")
 
-    if len(parts) < 3 and seconds > 0:
+    if len(parts) < 1 and seconds > 0:
         parts.append(f"{seconds}秒")
 
-    return "直播还有" + "".join(parts)
+    return "还有" + "".join(parts) + "配信"
