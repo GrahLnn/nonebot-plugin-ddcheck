@@ -114,11 +114,11 @@ async def handle_message(
     bot: Bot, matcher: Matcher, event: GroupMessageEvent, msg: Message = CommandArg()
 ):
     at_segment = msg["at"]
-    # if not at_segment:
-    #     return
-    # target_qq = at_segment[0].data["qq"]
+    if not at_segment:
+        return
+    target_qq = at_segment[0].data["qq"]
     text = msg.extract_plain_text()
-    print("llmllmllmllmask" + event.user_id + " " + text)
+    print(str(target_qq) + "ask" + str(event.user_id) + " " + text)
     # if str(target_qq) == str(bot.self_id):
     #     result = openai_completion(text)
     #     sender_id = event.user_id
