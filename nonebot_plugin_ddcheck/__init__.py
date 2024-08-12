@@ -120,24 +120,22 @@ async def handle_binddd(
 
     # 获取被@用户的QQ号
     target_qq = at_segment[0].data["qq"]
-    print(target_qq)
 
     # 获取当前群号
     group_id = str(event.group_id)
 
     # 更新bind_data
-    if not isinstance(bind_data, dict):
-        bind_data = {}
-    if group_id not in bind_data:
-        bind_data[group_id] = {}
-    if "qq" not in bind_data[group_id]:
-        bind_data[group_id]["qq"] = []
-    bind_data[group_id]["qq"].append(str(target_qq))
+    targets = [item["target_qq"] for item in bind_data if item["group_id"] == group_id]
+    if target_qq not in targets:
+        targets.append(target_qq)
+        bind_data.append({"group_id": group_id, "target_qq": str(target_qq)})
 
-    # 保存到bind.json
-    save_json(bind_file, bind_data)
+        # 保存到bind.json
+        save_json(bind_file, bind_data)
 
-    await matcher.finish(f"{target_qq}绑定成功，回复TD退订")
+        await matcher.finish(f"[CQ:at,qq={target_qq}]绑定成功，回复TD退订")
+    else:
+        await matcher.finish(f"[CQ:at,qq={target_qq}]已经绑定了")
 
 
 @driver.on_bot_connect
