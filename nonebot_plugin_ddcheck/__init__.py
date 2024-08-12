@@ -7,7 +7,7 @@ from pathlib import Path
 
 import nonebot
 import yt_dlp
-from nonebot import get_bot, get_driver, on_command, require
+from nonebot import get_bot, get_driver, on_command, require, on_message
 from nonebot.adapters import Message
 from nonebot.adapters.onebot.v11 import (
     Bot,
@@ -38,6 +38,7 @@ from nonebot_plugin_alconna import UniMessage
 
 from .config import Config
 from .data_source import get_reply, load_json
+from .llm import openai_completion
 
 __plugin_meta__ = PluginMetadata(
     name="成分姬",
@@ -105,6 +106,23 @@ whenlive = on_command(
 )
 binddd = on_command("bind", block=True, priority=12)
 bindrm = on_command("bindrm", block=True, priority=12)
+ask_llm = on_message()
+
+
+@ask_llm.handle()
+async def handle_message(
+    bot: Bot, matcher: Matcher, event: GroupMessageEvent, msg: Message = CommandArg()
+):
+    at_segment = msg["at"]
+    if not at_segment:
+        return
+    target_qq = at_segment[0].data["qq"]
+    if str(target_qq) == str(bot.self_id):
+        text = msg.extract_plain_text().replace(str(MessageSegment.at(target_qq)), "")
+        result = openai_completion(text)
+        sender_id = event.user_id
+        at_message = MessageSegment.at(sender_id)
+        await matcher.finish(at_message + result)
 
 
 @binddd.handle()
