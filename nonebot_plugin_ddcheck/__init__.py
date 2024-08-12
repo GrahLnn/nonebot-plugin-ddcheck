@@ -13,6 +13,7 @@ from nonebot.adapters.onebot.v11 import (
     Bot,
     GroupMessageEvent,
     MessageEvent,
+    Event,
     MessageSegment,
 )
 from nonebot.log import logger
@@ -111,10 +112,10 @@ ask_llm = on_command("", block=True, priority=12)
 
 @ask_llm.handle()
 async def handle_message(
-    bot: Bot, matcher: Matcher, event: GroupMessageEvent, msg: Message = CommandArg()
+    bot: Bot, matcher: Matcher, event: Event, msg: Message = CommandArg()
 ):
     at_segment = msg["at"]
-    text = msg.extract_plain_text()
+    text = event.raw_message
     print("ask_llm", at_segment, text)
     if not at_segment:
         return
