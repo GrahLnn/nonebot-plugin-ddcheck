@@ -106,7 +106,7 @@ whenlive = on_command(
 )
 binddd = on_command("bind", block=True, priority=12)
 bindrm = on_command("bindrm", block=True, priority=12)
-ask_llm = on_message()
+ask_llm = on_command("", block=True, priority=12)
 
 
 @ask_llm.handle()
@@ -118,7 +118,7 @@ async def handle_message(
     #     return
     # target_qq = at_segment[0].data["qq"]
     text = msg.extract_plain_text()
-    print("ask" + event.user_id + " " + text)
+    print("llmllmllmllmask" + event.user_id + " " + text)
     # if str(target_qq) == str(bot.self_id):
     #     result = openai_completion(text)
     #     sender_id = event.user_id
