@@ -114,6 +114,7 @@ ask_llm = on_command("ask", block=True, priority=12)
 async def handle_message(
     bot: Bot, matcher: Matcher, event: GroupMessageEvent, msg: Message = CommandArg()
 ):
+    print(event.is_tome())
     at_segment = msg["at"]
     text = event.raw_message
     print("ask_llm", at_segment, text)
