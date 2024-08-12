@@ -9,7 +9,12 @@ import nonebot
 import yt_dlp
 from nonebot import get_bot, get_driver, on_command, require
 from nonebot.adapters import Message
-from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent, MessageEvent
+from nonebot.adapters.onebot.v11 import (
+    Bot,
+    GroupMessageEvent,
+    MessageEvent,
+    MessageSegment,
+)
 from nonebot.log import logger
 from nonebot.matcher import Matcher
 from nonebot.params import CommandArg
@@ -107,6 +112,7 @@ whenlive = on_command(
     priority=12,
 )
 binddd = on_command("bind", block=True, priority=12)
+bindrm = on_command("bindrm", block=True, priority=12)
 
 
 @binddd.handle()
@@ -136,6 +142,32 @@ async def handle_binddd(
         await matcher.finish(f"[CQ:at,qq={target_qq}]绑定成功，回复TD退订")
     else:
         await matcher.finish(f"[CQ:at,qq={target_qq}]已经绑定了")
+
+
+@bindrm.handle()
+async def handle_bindrm(
+    matcher: Matcher, event: GroupMessageEvent, msg: Message = CommandArg()
+):
+    at_segment = msg["at"]
+    if not at_segment:
+        await matcher.finish("请@要解绑的用户")
+
+    target_qq = at_segment[0].data["qq"]
+    group_id = str(event.group_id)
+
+    targets = [item["target_qq"] for item in bind_data if item["group_id"] == group_id]
+    at_message = MessageSegment.at(target_qq)
+    if target_qq in targets:
+        bind_data = [
+            item
+            for item in bind_data
+            if item["target_qq"] != target_qq and item["group_id"] != group_id
+        ]
+        save_json(bind_file, bind_data)
+
+        await matcher.finish(f"{at_message}解绑成功")
+    else:
+        await matcher.finish(f"{at_message}并没有绑定")
 
 
 @driver.on_bot_connect
