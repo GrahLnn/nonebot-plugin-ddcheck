@@ -107,12 +107,12 @@ whenlive = on_command(
 )
 binddd = on_command("bind", block=True, priority=12)
 bindrm = on_command("bindrm", block=True, priority=12)
-ask_llm = on_message()
+ask_llm = on_command("", block=True, priority=12)
 
 
 @ask_llm.handle()
 async def handle_message(
-    bot: Bot, matcher: Matcher, event: Event, msg: Message = CommandArg()
+    bot: Bot, matcher: Matcher, event: GroupMessageEvent, msg: Message = CommandArg()
 ):
     at_segment = msg["at"]
     text = event.raw_message
