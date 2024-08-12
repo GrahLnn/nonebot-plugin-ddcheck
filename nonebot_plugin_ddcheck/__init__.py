@@ -154,7 +154,7 @@ async def handle_bindrm(
 
     target_qq = at_segment[0].data["qq"]
     group_id = str(event.group_id)
-
+    global bind_data
     targets = [item["target_qq"] for item in bind_data if item["group_id"] == group_id]
     at_message = MessageSegment.at(target_qq)
     if target_qq in targets:
