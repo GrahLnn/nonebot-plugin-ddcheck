@@ -1,10 +1,17 @@
 import asyncio
 import datetime
 import json
+from pathlib import Path
 
+import nonebot_plugin_localstore as store
 import yt_dlp
 from bilibili_api import user
+from nonebot.adapters.onebot.v11 import (
+    MessageSegment,
+)
 from nonebot.log import logger
+
+from .data_source import load_json
 
 timers = {}
 
@@ -53,15 +60,18 @@ async def get_upcoming_youtube_live(ytber):
     return up_coming
 
 
-async def timer_task(nickname, delay, url, sub_groups, bot, at_users=[]):
+async def timer_task(nickname, delay, url, sub_groups, bot):
+    bind_file: Path = store.get_data_file("nonebot_plugin_ddcheck", "bind.json")
+    bind_data = load_json(bind_file)
+    at_users = [
+        item["target_qq"] for item in bind_data if item["group_id"] in sub_groups
+    ]
     await asyncio.sleep(delay)
+    message = ""
+    for user_id in at_users:
+        message += MessageSegment.at(user_id)
     for group_id in sub_groups:
-        at_message = (
-            "".join([f"[CQ:at,qq={user_id}]" for user_id in at_users])
-            if at_users
-            else ""
-        )
-        message = f"{at_message}\n{nickname}配信啦！\n传送门: {url}"
+        message += f"\n{nickname}配信啦！\n传送门: {url}"
         await bot.send_group_msg(group_id=group_id, message=message)
 
 

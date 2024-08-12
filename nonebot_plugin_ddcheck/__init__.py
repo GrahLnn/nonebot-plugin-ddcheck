@@ -37,7 +37,7 @@ import nonebot_plugin_localstore as store
 from nonebot_plugin_alconna import UniMessage
 
 from .config import Config
-from .data_source import get_reply
+from .data_source import get_reply, load_json
 
 __plugin_meta__ = PluginMetadata(
     name="成分姬",
@@ -68,14 +68,6 @@ ydl_opts = {
     "format": "json",
     "quiet": True,
 }
-
-
-def load_json(file: Path, default=[]):
-    try:
-        with open(file, encoding="utf-8") as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return default
 
 
 def save_json(file: Path, data):
@@ -157,6 +149,9 @@ async def handle_bindrm(
     global bind_data
     targets = [item["target_qq"] for item in bind_data if item["group_id"] == group_id]
     at_message = MessageSegment.at(target_qq)
+    massage = ""
+    for _ in range(3):
+        massage += at_message
     if target_qq in targets:
         bind_data = [
             item
@@ -164,10 +159,11 @@ async def handle_bindrm(
             if item["target_qq"] != target_qq and item["group_id"] != group_id
         ]
         save_json(bind_file, bind_data)
+        
 
-        await matcher.finish(at_message + "解绑成功")
+        await matcher.finish(massage + "解绑成功")
     else:
-        await matcher.finish(at_message + "并没有绑定")
+        await matcher.finish(massage + "并没有绑定")
 
 
 @driver.on_bot_connect
