@@ -107,28 +107,19 @@ whenlive = on_command(
 )
 binddd = on_command("bind", block=True, priority=12)
 bindrm = on_command("bindrm", block=True, priority=12)
-ask_llm = on_command("ask", block=True, priority=12)
+ask_llm = on_command("", block=True, priority=12)
 
 
 @ask_llm.handle()
 async def handle_message(
     bot: Bot, matcher: Matcher, event: GroupMessageEvent, msg: Message = CommandArg()
 ):
-    print(event.is_tome())
-    at_segment = msg["at"]
-    text = event.raw_message
-    print("ask_llm", at_segment, text)
-    if not at_segment:
-        print("no at")
-        return
-    target_qq = at_segment[0].data["qq"]
-    text = msg.extract_plain_text()
-    print(str(target_qq) + "ask" + str(event.user_id) + " " + text)
-    # if str(target_qq) == str(bot.self_id):
-    #     result = openai_completion(text)
-    #     sender_id = event.user_id
-    #     at_message = MessageSegment.at(sender_id)
-    #     await matcher.finish(at_message + result)
+    if event.is_tome():
+        text = msg.extract_plain_text()
+        result = openai_completion(text)
+        sender_id = event.user_id
+        at_message = MessageSegment.at(sender_id)
+        await matcher.finish(at_message + result)
 
 
 @binddd.handle()
