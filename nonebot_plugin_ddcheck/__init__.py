@@ -112,11 +112,11 @@ ask_llm = on_command("", block=True, priority=12)
 
 @ask_llm.handle()
 async def handle_message(
-    bot: Bot, matcher: Matcher, event: GroupMessageEvent, msg: Message = CommandArg()
+    matcher: Matcher, event: GroupMessageEvent, msg: Message = CommandArg()
 ):
     if event.is_tome():
         text = msg.extract_plain_text()
-        logger.info("ask_llm" + text)
+        logger.info("ask_llm " + text)
         result = openai_completion(text)
         sender_id = event.user_id
         at_message = MessageSegment.at(sender_id)
