@@ -53,6 +53,7 @@ superusers = list(config.superusers)
 dd_file: Path = store.get_data_file("nonebot_plugin_ddcheck", "dd.json")
 vtb_file: Path = store.get_data_file("nonebot_plugin_ddcheck", "vtb.json")
 ytb_file: Path = store.get_data_file("nonebot_plugin_ddcheck", "ytb.json")
+bind_file: Path = store.get_data_file("nonebot_plugin_ddcheck", "bind.json")
 
 ydl_opts = {
     "flat_playlist": True,
@@ -81,6 +82,7 @@ def save_json(file: Path, data):
 alias_data = load_json(dd_file)
 vtb_data = load_json(vtb_file)
 ytb_data = load_json(ytb_file)
+bind_data = load_json(bind_file)
 
 driver = nonebot.get_driver()
 ddcheck = on_command("查成分", block=True, priority=12)
@@ -104,6 +106,35 @@ whenlive = on_command(
     block=True,
     priority=12,
 )
+binddd = on_command("bind", block=True, priority=12)
+
+
+@binddd.handle()
+async def handle_binddd(
+    matcher: Matcher, event: GroupMessageEvent, msg: Message = CommandArg()
+):
+    # 检查消息中是否包含@
+    at_segment = msg["at"]
+    if not at_segment:
+        await matcher.finish("请@要绑定的用户")
+
+    # 获取被@用户的QQ号
+    target_qq = at_segment[0].data["qq"]
+
+    # 获取当前群号
+    group_id = str(event.group_id)
+
+    # 更新bind_data
+    if group_id not in bind_data:
+        bind_data[group_id] = {}
+    if "qq" not in bind_data[group_id]:
+        bind_data[group_id]["qq"] = []
+    bind_data[group_id]["qq"].append(str(target_qq))
+
+    # 保存到bind.json
+    save_json(bind_file, bind_data)
+
+    await matcher.finish(f"{target_qq}绑定成功，回复TD退订")
 
 
 @driver.on_bot_connect
