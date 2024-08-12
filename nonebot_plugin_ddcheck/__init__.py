@@ -118,7 +118,7 @@ async def handle_message(
         return
     target_qq = at_segment[0].data["qq"]
     text = msg.extract_plain_text().replace(str(MessageSegment.at(target_qq)), "")
-    logger.info(target_qq + "ask" + event.user_id + " " + text)
+    print(target_qq + "ask" + event.user_id + " " + text)
     if str(target_qq) == str(bot.self_id):
         result = openai_completion(text)
         sender_id = event.user_id
