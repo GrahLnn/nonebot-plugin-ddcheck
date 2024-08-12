@@ -165,9 +165,9 @@ async def handle_bindrm(
         ]
         save_json(bind_file, bind_data)
 
-        await matcher.finish(f"{at_message}解绑成功")
+        await matcher.finish(at_message + "解绑成功")
     else:
-        await matcher.finish(f"{at_message}并没有绑定")
+        await matcher.finish(at_message + "并没有绑定")
 
 
 @driver.on_bot_connect
