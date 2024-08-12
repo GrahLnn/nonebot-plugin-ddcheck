@@ -114,16 +114,16 @@ async def handle_message(
     bot: Bot, matcher: Matcher, event: GroupMessageEvent, msg: Message = CommandArg()
 ):
     at_segment = msg["at"]
-    if not at_segment:
-        return
-    target_qq = at_segment[0].data["qq"]
-    text = msg.extract_plain_text().replace(str(MessageSegment.at(target_qq)), "")
-    print(target_qq + "ask" + event.user_id + " " + text)
-    if str(target_qq) == str(bot.self_id):
-        result = openai_completion(text)
-        sender_id = event.user_id
-        at_message = MessageSegment.at(sender_id)
-        await matcher.finish(at_message + result)
+    # if not at_segment:
+    #     return
+    # target_qq = at_segment[0].data["qq"]
+    text = msg.extract_plain_text()
+    print("ask" + event.user_id + " " + text)
+    # if str(target_qq) == str(bot.self_id):
+    #     result = openai_completion(text)
+    #     sender_id = event.user_id
+    #     at_message = MessageSegment.at(sender_id)
+    #     await matcher.finish(at_message + result)
 
 
 @binddd.handle()
