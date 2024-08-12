@@ -120,7 +120,7 @@ async def handle_message(
         result = openai_completion(text)
         sender_id = event.user_id
         at_message = MessageSegment.at(sender_id)
-        await matcher.finish(at_message + result)
+        await matcher.finish(at_message + " " + result)
 
 
 @binddd.handle()
