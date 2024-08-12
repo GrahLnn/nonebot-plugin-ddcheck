@@ -5,9 +5,9 @@ from pathlib import Path
 
 import yt_dlp
 from bilibili_api import user
-from nonebot.adapters.onebot.v11 import (
-    MessageSegment,
-)
+# from nonebot.adapters.onebot.v11 import (
+#     MessageSegment,
+# )
 from nonebot.log import logger
 
 from .data_source import load_json
