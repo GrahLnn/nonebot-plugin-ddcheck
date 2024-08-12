@@ -116,6 +116,7 @@ async def handle_message(
 ):
     if event.is_tome():
         text = msg.extract_plain_text()
+        logger.info("ask_llm" + text)
         result = openai_completion(text)
         sender_id = event.user_id
         at_message = MessageSegment.at(sender_id)
