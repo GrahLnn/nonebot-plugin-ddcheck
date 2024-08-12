@@ -107,7 +107,7 @@ whenlive = on_command(
 )
 binddd = on_command("bind", block=True, priority=12)
 bindrm = on_command("bindrm", block=True, priority=12)
-ask_llm = on_command("", block=True, priority=12)
+ask_llm = on_command("ask", block=True, priority=12)
 
 
 @ask_llm.handle()
