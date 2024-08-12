@@ -109,7 +109,7 @@ bindrm = on_command("bindrm", block=True, priority=12)
 
 @binddd.handle()
 async def handle_binddd(
-    matcher: Matcher, event: GroupMessageEvent, msg: Message = CommandArg()
+    bot: Bot, matcher: Matcher, event: GroupMessageEvent, msg: Message = CommandArg()
 ):
     # 检查消息中是否包含@
     at_segment = msg["at"]
@@ -124,21 +124,22 @@ async def handle_binddd(
 
     # 更新bind_data
     targets = [item["target_qq"] for item in bind_data if item["group_id"] == group_id]
+    at_message = MessageSegment.at(target_qq)
     if target_qq not in targets:
         targets.append(target_qq)
         bind_data.append({"group_id": group_id, "target_qq": str(target_qq)})
 
         # 保存到bind.json
         save_json(bind_file, bind_data)
-
-        await matcher.finish(f"[CQ:at,qq={target_qq}]绑定成功，回复TD退订")
+        await update_timers(bot, vtb_data, ytb_data, bind_data)
+        await matcher.finish(at_message + "绑定成功，回复TD不退订")
     else:
-        await matcher.finish(f"[CQ:at,qq={target_qq}]已经绑定了")
+        await matcher.finish(at_message + "已经绑定了")
 
 
 @bindrm.handle()
 async def handle_bindrm(
-    matcher: Matcher, event: GroupMessageEvent, msg: Message = CommandArg()
+    bot: Bot, matcher: Matcher, event: GroupMessageEvent, msg: Message = CommandArg()
 ):
     at_segment = msg["at"]
     if not at_segment:
@@ -149,9 +150,6 @@ async def handle_bindrm(
     global bind_data
     targets = [item["target_qq"] for item in bind_data if item["group_id"] == group_id]
     at_message = MessageSegment.at(target_qq)
-    massage = ""
-    for _ in range(3):
-        massage += at_message
     if target_qq in targets:
         bind_data = [
             item
@@ -159,17 +157,17 @@ async def handle_bindrm(
             if item["target_qq"] != target_qq and item["group_id"] != group_id
         ]
         save_json(bind_file, bind_data)
-        
 
-        await matcher.finish(massage + "解绑成功")
+        await update_timers(bot, vtb_data, ytb_data, bind_data)
+        await matcher.finish(at_message + "解绑成功")
     else:
-        await matcher.finish(massage + "并没有绑定")
+        await matcher.finish(at_message + "并没有绑定")
 
 
 @driver.on_bot_connect
 async def _():
     bot = get_bot()
-    asyncio.create_task(check_timers(bot, vtb_data, ytb_data))
+    asyncio.create_task(check_timers(bot, vtb_data, ytb_data, bind_data))
 
 
 @ddcheck.handle()
@@ -289,7 +287,7 @@ async def handle_add(
     save_json(file, data)
 
     bot = get_bot()
-    await update_timers(bot, vtb_data, ytb_data)
+    await update_timers(bot, vtb_data, ytb_data, bind_data)
 
     live_info = await (
         get_upcoming_youtube_live if is_youtube else get_upcoming_bili_live

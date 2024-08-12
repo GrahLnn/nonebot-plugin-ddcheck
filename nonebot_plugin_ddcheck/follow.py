@@ -4,6 +4,7 @@ import json
 
 import yt_dlp
 from bilibili_api import user
+from nonebot.adapters.onebot.v11 import MessageSegment
 from nonebot.log import logger
 
 timers = {}
@@ -53,15 +54,19 @@ async def get_upcoming_youtube_live(ytber):
     return up_coming
 
 
-async def timer_task(nickname, delay, url, sub_groups, bot):
+async def timer_task(nickname, delay, url, sub_groups, bot, bind_data):
     await asyncio.sleep(delay)
     for group_id in sub_groups:
+        message = ""
+        for bind in bind_data:
+            if bind["group_id"] == group_id:
+                message += MessageSegment.at(bind["target_qq"])
         await bot.send_group_msg(
-            group_id=group_id, message=f"{nickname}开播啦！\n传送门: {url}"
+            group_id=group_id, message=message + f"{nickname}开播啦！\n传送门: {url}"
         )
 
 
-async def add_timer(nickname, uid_or_id, release_time, sub_groups, url, bot):
+async def add_timer(nickname, uid_or_id, release_time, sub_groups, url, bot, bind_data):
     if uid_or_id in timers:
         return
 
@@ -70,18 +75,18 @@ async def add_timer(nickname, uid_or_id, release_time, sub_groups, url, bot):
         return
 
     timers[uid_or_id] = asyncio.create_task(
-        timer_task(nickname, delay, url, sub_groups, bot)
+        timer_task(nickname, delay, url, sub_groups, bot, bind_data)
     )
 
 
-async def check_timers(bot, vtb_data, ytb_data):
+async def check_timers(bot, vtb_data, ytb_data, bind_data):
     while True:
-        await update_timers(bot, vtb_data, ytb_data)
+        await update_timers(bot, vtb_data, ytb_data, bind_data)
 
         await asyncio.sleep(3600)  # 每小时检查一次
 
 
-async def update_timers(bot, vtb_data, ytb_data):
+async def update_timers(bot, vtb_data, ytb_data, bind_data):
     for vtb in vtb_data:
         live_info = await get_upcoming_bili_live(vtb["uid"])
         if live_info:
@@ -95,6 +100,7 @@ async def update_timers(bot, vtb_data, ytb_data):
                     vtb["sub_group"],
                     live_info["url"],
                     bot,
+                    bind_data,
                 )
 
     for ytb in ytb_data:
@@ -110,6 +116,7 @@ async def update_timers(bot, vtb_data, ytb_data):
                     ytb["sub_group"],
                     live_info["url"],
                     bot,
+                    bind_data,
                 )
 
 
