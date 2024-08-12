@@ -120,11 +120,14 @@ async def handle_binddd(
 
     # 获取被@用户的QQ号
     target_qq = at_segment[0].data["qq"]
+    print(target_qq)
 
     # 获取当前群号
     group_id = str(event.group_id)
 
     # 更新bind_data
+    if not isinstance(bind_data, dict):
+        bind_data = {}
     if group_id not in bind_data:
         bind_data[group_id] = {}
     if "qq" not in bind_data[group_id]:
