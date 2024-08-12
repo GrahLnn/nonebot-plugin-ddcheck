@@ -115,7 +115,7 @@ async def handle_message(
 ):
     at_segment = msg["at"]
     text = msg.extract_plain_text()
-    print(at_segment, text)
+    print("ask_llm", at_segment, text)
     if not at_segment:
         return
     target_qq = at_segment[0].data["qq"]
