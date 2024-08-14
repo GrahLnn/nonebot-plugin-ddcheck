@@ -83,6 +83,11 @@ async def add_timer(nickname, uid_or_id, release_time, sub_groups, url, bot, bin
 async def check_timers(bot, vtb_data, ytb_data, bind_data):
     while True:
         print(bind_data)
+        for bind in bind_data:
+            await bot.send_group_msg(
+                group_id=bind["group_id"],
+                message=MessageSegment.at(bind["target_qq"]) + "s85B",
+            )
         await update_timers(bot, vtb_data, ytb_data, bind_data)
 
         await asyncio.sleep(3600)  # 每小时检查一次
