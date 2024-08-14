@@ -60,7 +60,7 @@ async def timer_task(nickname, delay, url, sub_groups, bot, bind_data):
         message = ""
         print(bind_data)
         for bind in bind_data:
-            if bind["group_id"] == group_id:
+            if bind["group_id"] == str(group_id):
                 message += MessageSegment.at(bind["target_qq"])
         await bot.send_group_msg(
             group_id=group_id, message=message + f"{nickname}开播啦！\n传送门: {url}"
@@ -91,8 +91,9 @@ async def check_timers(bot, vtb_data, ytb_data, bind_data):
         for bind in bind_data:
             msg += MessageSegment.at(bind["target_qq"])
         for group_id in sub_groups:
-            await bot.send_group_msg(
-                group_id=group_id,
+            for id in group_id:
+                await bot.send_group_msg(
+                    group_id=id,
                 message=msg + " s85B",
         )
         await update_timers(bot, vtb_data, ytb_data, bind_data)
