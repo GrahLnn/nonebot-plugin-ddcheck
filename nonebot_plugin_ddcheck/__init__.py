@@ -26,6 +26,7 @@ from .follow import (
     get_formatted_time_left,
     get_upcoming_bili_live,
     get_upcoming_youtube_live,
+    timers,
     update_timers,
 )
 
@@ -365,6 +366,7 @@ async def handle_whenlive(matcher: Matcher, msg: Message = CommandArg()):
             )
         else:
             records.append(f"{item['nickname']}还没有发布youtube的直播预告")
+    print(timers)
     if not records:
         await matcher.finish("还没有关注任何人呢，杂古")
     await matcher.finish("\n".join(records))
