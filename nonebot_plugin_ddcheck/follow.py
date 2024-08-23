@@ -67,6 +67,7 @@ async def timer_task(nickname, delay, url, sub_groups, bot, bind_data):
     timers.pop(nickname, None)
 
 async def add_timer(nickname, uid_or_id, release_time, sub_groups, url, bot, bind_data):
+    print(timers)
     if uid_or_id in timers:
         return
 
