@@ -133,7 +133,9 @@ async def handle_quickat(
         ]
 
     if qq_list:
-        msgs = " ".join([MessageSegment.at(qq) for qq in set(qq_list)])
+        msgs = ""
+        for qq in qq_list:
+            msgs += MessageSegment.at(qq) + " "
         await matcher.finish(msgs)
 
 
