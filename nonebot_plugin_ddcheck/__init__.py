@@ -144,6 +144,8 @@ async def handle_member(
     if str(event.user_id) not in superusers:
         await matcher.finish("你不是管理员，离开")
 
+    print(msg)
+
     at_segment = msg["at"]
     if not at_segment:
         await matcher.finish("请@要绑定的用户")
