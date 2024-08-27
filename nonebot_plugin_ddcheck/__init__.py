@@ -73,6 +73,8 @@ ydl_opts = {
     "quiet": True,
 }
 
+ban_words = ["sb", "母狗", "沐勾"]
+
 
 def save_json(file: Path, data):
     with open(file, "w", encoding="utf-8") as f:
@@ -114,6 +116,7 @@ ask_llm = on_command("", block=True, priority=12)
 
 member = on_command("member", block=True, priority=12)
 quickat = on_command("", block=True, priority=12)
+rmmember = on_command("rmm", block=True, priority=12)
 
 
 @quickat.handle()
@@ -139,14 +142,44 @@ async def handle_quickat(
         await matcher.finish(msgs)
 
 
+@rmmember.handle()
+async def handle_rmmember(
+    matcher: Matcher, event: GroupMessageEvent, msg: Message = CommandArg()
+):
+    if str(event.user_id) not in superusers:
+        await matcher.finish("你不是管理员，离开")
+
+    at_segment = msg["at"]
+    if not at_segment:
+        await matcher.finish("请@要解绑的用户")
+
+    # 获取被@用户的QQ号
+    target_qq = at_segment[0].data["qq"]
+
+    # 获取当前群号
+    group_id = str(event.group_id)
+    info = msg.extract_plain_text().strip().split()
+    nicknames = info[0].split(",")
+    for nickname in nicknames:
+        data = {
+            "nickname": nickname,
+            "qq": target_qq,
+            "group_id": group_id,
+        }
+        if data in member_data:
+            member_data.remove(data)
+        else:
+            await matcher.finish(f"{nickname}没有绑定过")
+    save_json(member_file, member_data)
+    await matcher.finish("更新成功")
+
+
 @member.handle()  # member nickname1,nickname2,nickname3 @msg
 async def handle_member(
     matcher: Matcher, event: GroupMessageEvent, msg: Message = CommandArg()
 ):
     if str(event.user_id) not in superusers:
         await matcher.finish("你不是管理员，离开")
-
-    print(msg)
 
     at_segment = msg["at"]
     if not at_segment:
@@ -160,9 +193,18 @@ async def handle_member(
     info = msg.extract_plain_text().strip().split()
     nicknames = info[0].split(",")
     for nickname in nicknames:
-        member_data.append(
-            {"nickname": nickname, "qq": target_qq, "group_id": group_id}
-        )
+        if nickname in ban_words:
+            # await matcher.finish("你骂谁呢？")
+            continue
+        data = {
+            "nickname": nickname,
+            "qq": target_qq,
+            "group_id": group_id,
+        }
+        if data not in member_data:
+            member_data.append(data)
+        else:
+            await matcher.finish(f"{nickname}已经绑定过了")
     save_json(member_file, member_data)
     await matcher.finish("更新成功")
 
