@@ -62,6 +62,7 @@ dd_file: Path = store.get_data_file("nonebot_plugin_ddcheck", "dd.json")
 vtb_file: Path = store.get_data_file("nonebot_plugin_ddcheck", "vtb.json")
 ytb_file: Path = store.get_data_file("nonebot_plugin_ddcheck", "ytb.json")
 bind_file: Path = store.get_data_file("nonebot_plugin_ddcheck", "bind.json")
+member_file: Path = store.get_data_file("nonebot_plugin_ddcheck", "member.json")
 
 ydl_opts = {
     "flat_playlist": True,
@@ -83,6 +84,7 @@ alias_data = load_json(dd_file)
 vtb_data = load_json(vtb_file)
 ytb_data = load_json(ytb_file)
 bind_data = load_json(bind_file)
+member_data = load_json(member_file)
 
 driver = nonebot.get_driver()
 ddcheck = on_command("查成分", block=True, priority=12)
@@ -109,6 +111,56 @@ whenlive = on_command(
 binddd = on_command("bind", block=True, priority=12)
 bindrm = on_command("bindrm", block=True, priority=12)
 ask_llm = on_command("", block=True, priority=12)
+
+member = on_command("member", block=True, priority=12)
+quickat = on_command("", block=True, priority=12)
+
+
+@quickat.handle()
+async def handle_quickat(
+    matcher: Matcher, event: GroupMessageEvent, msg: Message = CommandArg()
+):
+    text = msg.extract_plain_text().strip()
+    group_id = str(event.group_id)
+
+    if "都来康康" in text:
+        qq_list = [item["qq"] for item in member_data if item["group_id"] == group_id]
+    else:
+        qq_list = [
+            item["qq"]
+            for item in member_data
+            if item["nickname"] in text and item["group_id"] == group_id
+        ]
+
+    if qq_list:
+        msgs = " ".join([MessageSegment.at(qq) for qq in set(qq_list)])
+        await matcher.finish(msgs)
+
+
+@member.handle()  # member nickname1,nickname2,nickname3 @msg
+async def handle_member(
+    matcher: Matcher, event: GroupMessageEvent, msg: Message = CommandArg()
+):
+    if str(event.user_id) not in superusers:
+        await matcher.finish("你不是管理员，离开")
+
+    at_segment = msg["at"]
+    if not at_segment:
+        await matcher.finish("请@要绑定的用户")
+
+    # 获取被@用户的QQ号
+    target_qq = at_segment[0].data["qq"]
+
+    # 获取当前群号
+    group_id = str(event.group_id)
+    info = msg.extract_plain_text().strip().split()
+    nicknames = info[0].split(",")
+    for nickname in nicknames:
+        member_data.append(
+            {"nickname": nickname, "qq": target_qq, "group_id": group_id}
+        )
+    save_json(member_file, member_data)
+    await matcher.finish("更新成功")
 
 
 @ask_llm.handle()
