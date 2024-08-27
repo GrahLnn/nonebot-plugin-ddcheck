@@ -60,9 +60,10 @@ async def timer_task(nickname, delay, url, sub_groups, bot, bind_data, uid_or_id
         message = ""
         for bind in bind_data:
             if bind["group_id"] == str(group_id):
-                message += MessageSegment.at(bind["target_qq"])
+                message += MessageSegment.at(bind["target_qq"]) + " "
         await bot.send_group_msg(
-            group_id=group_id, message=message + f"{nickname}开播啦！\n传送门: {url}"
+            group_id=group_id,
+            message=message + f"{nickname}开播啦！\n\n传送门: {url}",
         )
     timers.pop(uid_or_id, None)
 
@@ -78,7 +79,6 @@ async def add_timer(nickname, uid_or_id, release_time, sub_groups, url, bot, bin
     timers[uid_or_id] = asyncio.create_task(
         timer_task(nickname, delay, url, sub_groups, bot, bind_data, uid_or_id)
     )
-    print(timers)
 
 
 async def check_timers(bot, vtb_data, ytb_data, bind_data):
