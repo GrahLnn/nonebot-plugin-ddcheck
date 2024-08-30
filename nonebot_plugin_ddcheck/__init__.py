@@ -125,9 +125,14 @@ async def handle_quickat(
 ):
     text = msg.extract_plain_text().strip()
     group_id = str(event.group_id)
+    msg_user_id = str(event.user_id)
 
     if "来康康" in text:
-        qq_list = [item["qq"] for item in member_data if item["group_id"] == group_id]
+        qq_list = [
+            item["qq"]
+            for item in member_data
+            if item["group_id"] == group_id and str(item["qq"]) != msg_user_id
+        ]
     else:
         qq_list = [
             item["qq"]
@@ -136,6 +141,7 @@ async def handle_quickat(
         ]
 
     if qq_list:
+        qq_list = list(set(qq_list))
         msgs = ""
         for qq in qq_list:
             msgs += MessageSegment.at(qq) + " "
@@ -154,7 +160,7 @@ async def handle_rmmember(
         await matcher.finish("请@要解绑的用户")
 
     # 获取被@用户的QQ号
-    target_qq = at_segment[0].data["qq"]
+    target_qq = str(at_segment[0].data["qq"])
 
     # 获取当前群号
     group_id = str(event.group_id)
