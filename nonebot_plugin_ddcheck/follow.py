@@ -54,7 +54,9 @@ async def get_upcoming_youtube_live(ytber):
     return up_coming
 
 
-async def timer_task(nickname, delay, url, sub_groups, bot, bind_data, uid_or_id, title = None):
+async def timer_task(
+    nickname, delay, url, sub_groups, bot, bind_data, uid_or_id, title=None
+):
     await asyncio.sleep(delay)
     for group_id in sub_groups:
         message = ""
@@ -63,12 +65,14 @@ async def timer_task(nickname, delay, url, sub_groups, bot, bind_data, uid_or_id
                 message += MessageSegment.at(bind["target_qq"]) + " "
         await bot.send_group_msg(
             group_id=group_id,
-            message=message + f"{nickname}开播啦！\n\n{title}: {url}",
+            message=message + f"{nickname}开播啦！gkd\n\n{title}\n{url}",
         )
     timers.pop(uid_or_id, None)
 
 
-async def add_timer(nickname, uid_or_id, release_time, sub_groups, url, bot, bind_data, title = None):
+async def add_timer(
+    nickname, uid_or_id, release_time, sub_groups, url, bot, bind_data, title=None
+):
     if uid_or_id in timers:
         return
 
