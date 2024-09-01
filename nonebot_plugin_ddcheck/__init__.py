@@ -466,7 +466,7 @@ async def handle_whenlive(matcher: Matcher, msg: Message = CommandArg()):
         live_info = await get_upcoming_youtube_live(item["id"])
         if live_info:
             records.append(
-                f"{item['nickname']}{get_formatted_time_left(live_info['release_time'])}(youtube)"
+                f"{item['nickname']}{get_formatted_time_left(live_info['release_time'])}(youtube)\n{live_info['title']}"
             )
         else:
             records.append(f"{item['nickname']}还没有发布youtube的直播预告")
