@@ -49,7 +49,6 @@ async def get_upcoming_youtube_live(ytber):
         if "schedule" in entry["title"].lower():
             continue
         release_time = entry["release_timestamp"]
-        print(entry)
         up_coming = {"url": url, "release_time": release_time, "title": entry["title"]}
     return up_coming
 
