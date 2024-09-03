@@ -95,7 +95,7 @@ driver = nonebot.get_driver()
 async def _():
     bot = get_bot()
     asyncio.create_task(check_timers(bot, vtb_data, ytb_data, bind_data))
-    asyncio.create_task(watch_tweets(bot, vtb_data, bind_data))
+    # asyncio.create_task(watch_tweets(bot, vtb_data, bind_data))
 
 
 ddcheck = on_command("查成分", block=True, priority=12)
