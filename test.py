@@ -19,5 +19,5 @@ async def get_upcoming_bili_live(uid):
 
 
 if __name__ == "__main__":
-    info = asyncio.run(get_upcoming_bili_live(5714273))
+    info = asyncio.run(get_upcoming_bili_live(1217057066))
     print(info)
