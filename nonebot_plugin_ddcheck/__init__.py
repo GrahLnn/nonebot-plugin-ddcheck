@@ -453,14 +453,14 @@ async def handle_rmdd(matcher: Matcher, msg: Message = CommandArg()):
             alias_data.remove(item)
             save_json(dd_file, alias_data)
             await matcher.finish("删除成功")
-            break
 
 
 @whenlive.handle()
-async def handle_whenlive(matcher: Matcher, msg: Message = CommandArg()):
+async def handle_whenlive(bot: Bot, matcher: Matcher, msg: Message = CommandArg()):
     records = []
     for item in vtb_data:
         live_info = await get_upcoming_bili_live(item["uid"])
+        logger.info(live_info)
         if live_info:
             records.append(
                 f"{item['nickname']}{get_formatted_time_left(live_info['release_time'])}(bilibili)"
@@ -469,13 +469,15 @@ async def handle_whenlive(matcher: Matcher, msg: Message = CommandArg()):
             records.append(f"{item['nickname']}还没有发布bilibili的直播预告")
     for item in ytb_data:
         live_info = await get_upcoming_youtube_live(item["id"])
+        logger.info(live_info)
         if live_info:
             records.append(
                 f"{item['nickname']}{get_formatted_time_left(live_info['release_time'])}(youtube)\n{live_info['title']}"
             )
         else:
             records.append(f"{item['nickname']}还没有发布youtube的直播预告")
-    print(timers)
+    logger.info(records)
+    await update_timers(bot, vtb_data, ytb_data, bind_data)
     if not records:
         await matcher.finish("还没有关注任何人呢，杂古")
     await matcher.finish("\n".join(records))
