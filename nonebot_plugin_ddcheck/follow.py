@@ -6,6 +6,7 @@ import yt_dlp
 from bilibili_api import user
 from nonebot.adapters.onebot.v11 import MessageSegment
 from nonebot.log import logger
+from retry import retry
 
 timers = {}
 
@@ -86,11 +87,15 @@ async def add_timer(
 
 async def check_timers(bot, vtb_data, ytb_data, bind_data):
     while True:
-        await update_timers(bot, vtb_data, ytb_data, bind_data)
-
+        try:
+            await update_timers(bot, vtb_data, ytb_data, bind_data)
+        except TimeoutError:
+            logger.error("TimeoutError: Failed to update timers. Retrying...")
+        except Exception as e:
+            logger.error(f"Unexpected error: {e}")
         await asyncio.sleep(3600)  # 每小时检查一次
 
-
+@retry(tries=3, delay=2)
 async def update_timers(bot, vtb_data, ytb_data, bind_data):
     for vtb in vtb_data:
         live_info = await get_upcoming_bili_live(vtb["uid"])
