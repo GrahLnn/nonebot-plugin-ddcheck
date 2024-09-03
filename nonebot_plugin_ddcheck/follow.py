@@ -99,8 +99,9 @@ async def check_timers(bot, vtb_data, ytb_data, bind_data):
 
 async def update_timers(bot, vtb_data, ytb_data, bind_data):
     for vtb in vtb_data:
-        live_info = await get_upcoming_bili_live(vtb["uid"])
         logger.info("update bilibili live info")
+        live_info = await get_upcoming_bili_live(vtb["uid"])
+
         if live_info:
             release_time = live_info["release_time"]
             logger.info(f"{vtb['nickname']}, {get_formatted_time_left(release_time)}")
@@ -116,8 +117,9 @@ async def update_timers(bot, vtb_data, ytb_data, bind_data):
                 )
 
     for ytb in ytb_data:
-        live_info = await get_upcoming_youtube_live(ytb["id"])
         logger.info("update youtube live info")
+        live_info = await get_upcoming_youtube_live(ytb["id"])
+
         if live_info:
             release_time = live_info["release_time"]
             logger.info(f"{ytb['nickname']}, {get_formatted_time_left(release_time)}")

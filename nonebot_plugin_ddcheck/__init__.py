@@ -94,8 +94,6 @@ driver = nonebot.get_driver()
 @driver.on_bot_connect
 async def _():
     bot = get_bot()
-    info = await get_upcoming_bili_live(5714273)
-    print(info)
     asyncio.create_task(check_timers(bot, vtb_data, ytb_data, bind_data))
     asyncio.create_task(watch_tweets(bot, vtb_data, bind_data))
 
