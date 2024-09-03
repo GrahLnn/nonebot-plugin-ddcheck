@@ -94,16 +94,8 @@ driver = nonebot.get_driver()
 @driver.on_bot_connect
 async def _():
     bot = get_bot()
-    asyncio.create_task(task_one())
     asyncio.create_task(check_timers(bot, vtb_data, ytb_data, bind_data))
     asyncio.create_task(watch_tweets(bot, vtb_data, bind_data))
-
-
-async def task_one():
-    print("Task one started")
-    info = await get_upcoming_bili_live(1217057066)
-    print(f"Task one result: {info}")
-    print("Task one finished")
 
 
 ddcheck = on_command("查成分", block=True, priority=12)
