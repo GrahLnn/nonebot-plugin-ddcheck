@@ -204,6 +204,7 @@ async def get_reply(name: str) -> Union[str, bytes]:
     content = await template.render_async(info=result)
     return await html_to_pic(content, wait=0, viewport={"width": 100, "height": 100})
 
+
 def load_json(file: Path, default=[]):
     try:
         with open(file, encoding="utf-8") as f:

@@ -1,19 +1,18 @@
 import asyncio
-import datetime
 import json
-import os
 import traceback
 from pathlib import Path
 
 import nonebot
+import requests
 import yt_dlp
-from nonebot import get_bot, get_driver, on_command, require, on_message
+from nonebot import get_bot, get_driver, on_command, require
 from nonebot.adapters import Message
 from nonebot.adapters.onebot.v11 import (
     Bot,
+    Event,
     GroupMessageEvent,
     MessageEvent,
-    Event,
     MessageSegment,
 )
 from nonebot.log import logger
@@ -29,6 +28,7 @@ from .follow import (
     timers,
     update_timers,
 )
+from .twits import get_tweets
 
 require("nonebot_plugin_alconna")
 require("nonebot_plugin_apscheduler")
@@ -89,6 +89,15 @@ bind_data = load_json(bind_file)
 member_data = load_json(member_file)
 
 driver = nonebot.get_driver()
+
+
+@driver.on_bot_connect
+async def _():
+    bot = get_bot()
+    asyncio.create_task(check_timers(bot, vtb_data, ytb_data, bind_data))
+    asyncio.create_task(watch_tweets(bot, vtb_data, bind_data))
+
+
 ddcheck = on_command("查成分", block=True, priority=12)
 ddadd = on_command("adddd", block=True, priority=12)
 vtbadd = on_command("vtbadd", block=True, priority=12)
@@ -100,6 +109,8 @@ rmdd = on_command("rmdd", block=True, priority=12)
 whenlive = on_command(
     "主包什么时候播",
     aliases={
+        "maririn~",
+        "我要看maria",
         "等不及了",
         "什么时候播",
         "什么时候开播",
@@ -220,7 +231,7 @@ async def handle_message(
     matcher: Matcher, event: GroupMessageEvent, msg: Message = CommandArg()
 ):
     if event.is_tome():
-        sys_prompt = """You are a professional commentator known for your edgy and provocative style. Your task is to look at people's tweets and rate their personalities based on that. Be edgy and provocative, be mean a little. Don't be cringy. Here's a good attempt of a roast: ""Alright, let's break this down. You're sitting in a jungle of houseplants, barefoot and looking like you just rolled out of bed. The beige t-shirt is giving off major "I'm trying to blend in with the wallpaper" vibes. And those black pants? They scream "I couldn't be bothered to find something that matches." But hey, at least you look comfortable. Comfort is key, right? Just maybe not when you're trying to make a fashion statement."" Use Chinese output."""
+        sys_prompt = """你会用可爱的语气回答并喜爱在句子结束加入"喵~"的衬词，你当前的身份是「maririn的狗」，仅使用中文回复。"""
         text = msg.extract_plain_text()
         result = openai_completion(text, sys_prompt)
         sender_id = event.user_id
@@ -283,12 +294,6 @@ async def handle_bindrm(
         await matcher.finish(at_message + "解绑成功")
     else:
         await matcher.finish(at_message + "并没有绑定")
-
-
-@driver.on_bot_connect
-async def _():
-    bot = get_bot()
-    asyncio.create_task(check_timers(bot, vtb_data, ytb_data, bind_data))
 
 
 @ddcheck.handle()
@@ -474,3 +479,28 @@ async def handle_whenlive(matcher: Matcher, msg: Message = CommandArg()):
     if not records:
         await matcher.finish("还没有关注任何人呢，杂古")
     await matcher.finish("\n".join(records))
+
+
+async def watch_tweets(bot, vtb_data, bind_data):
+    while True:
+        tweets = await get_tweets()
+        for vtb in vtb_data:
+            await send_tweets(bot, vtb["sub_group"], bind_data, tweets)
+        await asyncio.sleep(120)
+
+
+async def send_tweets(bot, groups, bind_data, tweets: list):
+    if not tweets:
+        return
+    for tweet in tweets:
+        for group in groups:
+            message = ""
+            for bind in bind_data:
+                if bind["group_id"] == str(group):
+                    message += MessageSegment.at(bind["target_qq"]) + " "
+            message += "\nMaria发推：\n" + tweet["text"]
+            if tweet.get("images"):
+                for image in tweet["images"]:
+                    img_bytes = requests.get(image).content
+                    message += MessageSegment.image(img_bytes)
+            await bot.send_group_msg(group_id=group, message=message)

@@ -8,6 +8,7 @@ class Config(BaseModel):
     bilibili_cookie: str = ""
     openai_api_key: str = ""
     openai_base_url: str = ""
+    x_auth_token: str = ""
 
 
 ddcheck_config = get_plugin_config(Config)
