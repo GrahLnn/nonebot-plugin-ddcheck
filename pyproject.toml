@@ -19,9 +19,9 @@ bilireq = "^0.2.12"
 httpx = ">=0.20.0,<1.0.0"
 Jinja2 = "^3.0.0"
 yt-dlp = "^2024.8.6"
-bilibili-api = {git = "https://github.com/GrahLnn/bilibili-api.git"}
 retry = "^0.9.2"
 drissionpage = "^4.0.5.6"
+bilibili-api = {git = "https://github.com/GrahLnn/bilibili-api.git"}
 
 [tool.pyright]
 pythonVersion = "3.8"
