@@ -17,11 +17,11 @@ async def get_upcoming_bili_live(uid):
     logger.info(f"Fetching upcoming live for UID: {uid}")
     try:
         u = user.User(uid)
-        
+        data = await u.get_reservation()
     except Exception as e:
         logger.error(f"Error fetching live info for UID: {uid} - {e}")
         raise
-    data = await u.get_reservation()
+    
     if data:
         space_info = await u.get_live_info()
         live_room_url = space_info["live_room"]["url"]
