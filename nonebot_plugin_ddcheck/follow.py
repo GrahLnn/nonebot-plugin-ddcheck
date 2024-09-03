@@ -17,21 +17,22 @@ async def get_upcoming_bili_live(uid):
     logger.info(f"Fetching upcoming live for UID: {uid}")
     try:
         u = user.User(uid)
-        data = await u.get_reservation()
-        if data:
-            space_info = await u.get_live_info()
-            live_room_url = space_info["live_room"]["url"]
-            dt_object = data[0]["live_plan_start_time"]
-            return {
-                "url": live_room_url,
-                "release_time": dt_object,
-            }
-        else:
-            logger.info(f"No upcoming live found for UID: {uid}")
-            return None
+        
     except Exception as e:
         logger.error(f"Error fetching live info for UID: {uid} - {e}")
         raise
+    data = await u.get_reservation()
+    if data:
+        space_info = await u.get_live_info()
+        live_room_url = space_info["live_room"]["url"]
+        dt_object = data[0]["live_plan_start_time"]
+        return {
+            "url": live_room_url,
+            "release_time": dt_object,
+        }
+    else:
+        logger.info(f"No upcoming live found for UID: {uid}")
+        return None
 
 
 # 获取YouTube直播预约信息
