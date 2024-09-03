@@ -12,6 +12,7 @@ timers = {}
 
 
 # 获取B站直播预约信息
+@retry(tries=3, delay=2)
 async def get_upcoming_bili_live(uid):
     u = user.User(uid)
     data = await u.get_reservation()
@@ -96,24 +97,23 @@ async def check_timers(bot, vtb_data, ytb_data, bind_data):
         await asyncio.sleep(3600)  # 每小时检查一次
 
 
-@retry(tries=3, delay=2)
 async def update_timers(bot, vtb_data, ytb_data, bind_data):
-    # for vtb in vtb_data:
-    #     live_info = await get_upcoming_bili_live(vtb["uid"])
-    #     logger.info("update bilibili live info")
-    #     if live_info:
-    #         release_time = live_info["release_time"]
-    #         logger.info(f"{vtb['nickname']}, {get_formatted_time_left(release_time)}")
-    #         if vtb["uid"] not in timers:
-    #             await add_timer(
-    #                 vtb["nickname"],
-    #                 vtb["uid"],
-    #                 release_time,
-    #                 vtb["sub_group"],
-    #                 live_info["url"],
-    #                 bot,
-    #                 bind_data,
-    #             )
+    for vtb in vtb_data:
+        live_info = await get_upcoming_bili_live(vtb["uid"])
+        logger.info("update bilibili live info")
+        if live_info:
+            release_time = live_info["release_time"]
+            logger.info(f"{vtb['nickname']}, {get_formatted_time_left(release_time)}")
+            if vtb["uid"] not in timers:
+                await add_timer(
+                    vtb["nickname"],
+                    vtb["uid"],
+                    release_time,
+                    vtb["sub_group"],
+                    live_info["url"],
+                    bot,
+                    bind_data,
+                )
 
     for ytb in ytb_data:
         live_info = await get_upcoming_youtube_live(ytb["id"])
