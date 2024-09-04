@@ -98,7 +98,7 @@ async def _():
     asyncio.create_task(watch_tweets(bot, vtb_data, bind_data))
 
 
-ddcheck = on_command("查成分", block=True, priority=12)
+ddcheck = on_command("查成分", aliases={"ccf"}, block=True, priority=12)
 ddadd = on_command("adddd", block=True, priority=12)
 vtbadd = on_command("vtbadd", block=True, priority=12)
 ytbadd = on_command("ytbadd", block=True, priority=12)
