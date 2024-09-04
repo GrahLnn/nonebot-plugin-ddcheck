@@ -138,7 +138,7 @@ async def handle_quickat(
     group_id = str(event.group_id)
     msg_user_id = str(event.user_id)
 
-    if "来康康" in text:
+    if any(keyword in text for keyword in ["来康康", "都来康", "来吹逼"]):
         qq_list = [
             item["qq"]
             for item in member_data
