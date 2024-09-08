@@ -15,6 +15,7 @@ url = "https://x.com/MariaMari0nette"
 opt = ChromiumOptions().headless()
 driver = ChromiumPage(opt)
 driver.set.cookies(cookie)
+driver.set.window.max()
 driver.get(url)
 
 async def get_tweets(interval: int = 2):
