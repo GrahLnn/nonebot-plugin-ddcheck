@@ -1,6 +1,6 @@
 import time
 from datetime import datetime
-
+from nonebot.log import logger
 from DrissionPage import ChromiumOptions, ChromiumPage
 
 from .config import ddcheck_config
@@ -22,7 +22,7 @@ async def get_tweets(interval: int = 2):
     driver.refresh()
     # 使用XPath查找推文的根元素，并按新到旧的顺序进行抓取
     tweet_elements = driver.eles('xpath://article[@data-testid="tweet"]')
-
+    logger.info(f"find {len(tweet_elements)} tweets")
     # 逆序遍历推文元素列表，从最新的推文开始
     for tweet in tweet_elements:
         tweet_data = {}
