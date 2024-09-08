@@ -486,13 +486,14 @@ async def handle_whenlive(bot: Bot, matcher: Matcher, msg: Message = CommandArg(
 
 
 async def watch_tweets(bot, vtb_data, bind_data):
+    interval = 10
     while True:
-        tweets = await get_tweets()
+        tweets = await get_tweets(interval)
         tweets = list(set(tweets))
         logger.info("tweets: ", tweets)
         for vtb in vtb_data:
             await send_tweets(bot, vtb["sub_group"], bind_data, tweets)
-        await asyncio.sleep(120)
+        await asyncio.sleep(interval * 60)
 
 
 async def send_tweets(bot, groups, bind_data, tweets: list):
