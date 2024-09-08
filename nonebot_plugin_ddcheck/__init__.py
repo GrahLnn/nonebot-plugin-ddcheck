@@ -95,7 +95,7 @@ driver = nonebot.get_driver()
 async def _():
     bot = get_bot()
     asyncio.create_task(check_timers(bot, vtb_data, ytb_data, bind_data))
-    # asyncio.create_task(watch_tweets(bot, vtb_data, bind_data))
+    asyncio.create_task(watch_tweets(bot, vtb_data, bind_data))
 
 
 ddcheck = on_command("查成分", aliases={"ccf"}, block=True, priority=12)
@@ -231,7 +231,9 @@ async def handle_message(
     matcher: Matcher, event: GroupMessageEvent, msg: Message = CommandArg()
 ):
     if event.is_tome():
-        sys_prompt = """你会用可爱的语气回答并喜爱在句子结束加入"喵~"的衬词，你当前的身份是「maririn的狗」，仅使用中文回复。"""
+        sys_prompt = """你会用可爱的语气回答并喜爱在句子结束加入"喵~"的衬词，你当前的身份是「maririn的狗」，仅使用中文回复。
+        指南：
+        - 若用户询问意图求得鼓励的问题，以正面肯定的态度支持"""
         text = msg.extract_plain_text()
         result = openai_completion(text, sys_prompt)
         sender_id = event.user_id

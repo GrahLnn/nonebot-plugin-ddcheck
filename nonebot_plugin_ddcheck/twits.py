@@ -9,15 +9,17 @@ auth_token = ddcheck_config.x_auth_token
 
 cookie = {"domain": ".x.com", "name": "auth_token", "value": auth_token}
 
+url = "https://x.com/MariaMari0nette"
+# cookie = json.load(open("twitter_cookies.json"))
+
+opt = ChromiumOptions().headless()
+driver = ChromiumPage(opt)
+driver.set.cookies(cookie)
+driver.get(url)
 
 async def get_tweets(interval: int = 2):
-    opt = ChromiumOptions().headless()
-    driver = ChromiumPage(opt)
-    driver.set.cookies(cookie)
-    url = "https://x.com/MariaMari0nette"
-    driver.get(url)
     tweets_data = []
-
+    driver.refresh()
     # 使用XPath查找推文的根元素，并按新到旧的顺序进行抓取
     tweet_elements = driver.eles('xpath://article[@data-testid="tweet"]')
 
