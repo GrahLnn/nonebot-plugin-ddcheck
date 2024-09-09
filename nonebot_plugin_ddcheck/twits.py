@@ -54,10 +54,11 @@ async def get_tweets(interval: int = 2):
         current_timestamp = int(current_dt.timestamp())
         time_diff = current_timestamp - timestamp
 
-        print(tweet_data["date"], time_diff, text)
         # 检查时间差，跳过太旧的推文
         if time_diff > interval * 60:
-            logger.info(f"skip old tweet, published {time_diff} seconds ago")
+            logger.info(
+                f"skip old tweet {tweet_data['date']}, published {time_diff} seconds ago"
+            )
             continue
 
         # 获取作者名称和用户名
