@@ -486,7 +486,7 @@ async def handle_whenlive(bot: Bot, matcher: Matcher, msg: Message = CommandArg(
 
 
 async def watch_tweets(bot, vtb_data, bind_data):
-    interval = 2
+    interval = 30
     while True:
         tweets = await get_tweets(interval)
         tweets = list(set(tweets))
