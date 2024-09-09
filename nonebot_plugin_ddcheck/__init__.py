@@ -490,7 +490,7 @@ async def watch_tweets(bot, vtb_data, bind_data):
     while True:
         tweets = await get_tweets(interval)
         tweets = list(set(tweets))
-        logger.info("tweets: ", tweets)
+        logger.info(f"valid tweets: {len(tweets)}")
         for vtb in vtb_data:
             await send_tweets(bot, vtb["sub_group"], bind_data, tweets)
         await asyncio.sleep(interval * 60)

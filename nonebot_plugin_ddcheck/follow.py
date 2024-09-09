@@ -140,7 +140,7 @@ async def update_timers(bot, vtb_data, ytb_data, bind_data):
                     bind_data,
                     live_info["title"],
                 )
-    logger.info("timers: ", timers)
+    logger.info(f"count timers: {len(timers)}")
 
 
 def get_formatted_time_left(release_time):
