@@ -24,8 +24,8 @@ async def get_tweets(interval: int = 2):
     driver.refresh()
     driver.scroll.to_bottom()
     time.sleep(3)
-    driver.scroll.to_bottom()
-    time.sleep(3)
+    # driver.scroll.to_bottom()
+    # time.sleep(3)
     # 使用XPath查找推文的根元素，并按新到旧的顺序进行抓取
     tweet_elements = driver.eles('xpath://article[@data-testid="tweet"]')
     logger.info(f"find {len(tweet_elements)} tweets")
