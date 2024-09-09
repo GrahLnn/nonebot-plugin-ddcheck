@@ -489,7 +489,7 @@ async def watch_tweets(bot, vtb_data, bind_data):
     interval = 30
     while True:
         tweets = await get_tweets(interval)
-        tweets = list(set(tweets))
+        # tweets = list(set(tweets))
         logger.info(f"valid tweets: {len(tweets)}")
         for vtb in vtb_data:
             await send_tweets(bot, vtb["sub_group"], bind_data, tweets)
