@@ -1,5 +1,5 @@
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from nonebot.log import logger
 from DrissionPage import ChromiumOptions, ChromiumPage
 
@@ -17,6 +17,7 @@ driver = ChromiumPage(opt)
 driver.set.cookies(cookie)
 driver.set.window.max()
 driver.get(url)
+
 
 async def get_tweets(interval: int = 2):
     tweets_data = []
@@ -41,14 +42,20 @@ async def get_tweets(interval: int = 2):
         tweet_data["date"] = date_element.attr("datetime") if date_element else None
         if not tweet_data["date"]:
             continue
-        dt = datetime.strptime(tweet_data["date"], "%Y-%m-%dT%H:%M:%S.%fZ")
+        dt = datetime.strptime(tweet_data["date"], "%Y-%m-%dT%H:%M:%S.%fZ").replace(
+            tzinfo=timezone.utc
+        )
 
         # 将 datetime 对象转换为 Unix 时间戳
         timestamp = int(dt.timestamp())
         tweet_data["timestamp"] = timestamp
 
         current_timestamp = int(time.time())
-        if current_timestamp - timestamp > interval * 60 + 10:
+        time_diff = current_timestamp - timestamp
+        tweet_data["time_diff"] = time_diff
+        # 检查时间差，跳过太旧的推文
+        if time_diff > interval * 60:
+            logger.info(f"skip old tweet, published {time_diff} seconds ago")
             continue
 
         # 获取作者名称和用户名
