@@ -53,8 +53,8 @@ async def get_tweets(interval: int = 2):
         current_dt = datetime.now(timezone.utc)
         current_timestamp = int(current_dt.timestamp())
         time_diff = current_timestamp - timestamp
-        
-        print(time_diff, text)
+
+        print(tweet_data["date"], time_diff, text)
         # 检查时间差，跳过太旧的推文
         if time_diff > interval * 60:
             logger.info(f"skip old tweet, published {time_diff} seconds ago")
