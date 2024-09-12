@@ -148,6 +148,7 @@ async def handle_randomat(
             and str(item["qq"]) not in superusers
         ]
         if qq_list:
+            qq_list = list(set(qq_list))
             qq = random.choice(qq_list)
             await matcher.finish(MessageSegment.at(qq) + " 汪！")
         else:
