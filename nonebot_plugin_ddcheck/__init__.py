@@ -510,7 +510,7 @@ async def handle_whenlive(bot: Bot, matcher: Matcher, msg: Message = CommandArg(
 
 
 async def watch_tweets(bot, vtb_data, bind_data):
-    interval = 2
+    interval = 10
     while True:
         tweets = await get_tweets(interval)
         unique_tweets = {tweet["text"]: tweet for tweet in tweets}.values()
