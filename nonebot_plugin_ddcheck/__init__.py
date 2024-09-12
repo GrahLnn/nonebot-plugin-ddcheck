@@ -111,6 +111,7 @@ whenlive = on_command(
     "主包什么时候播",
     aliases={
         "maririn~",
+        "我要看maririn",
         "我要看maria",
         "等不及了",
         "什么时候播",
@@ -139,7 +140,7 @@ async def handle_randomat(
     text = msg.extract_plain_text().strip()
     group_id = str(event.group_id)
     msg_user_id = str(event.user_id)
-    if any(keyword in text for keyword in ["召唤一条狗"]):
+    if any(keyword in text for keyword in ["召唤一条狗", "来条狗", "随机召唤"]):
         qq_list = [
             item["qq"]
             for item in member_data
@@ -163,7 +164,10 @@ async def handle_quickat(
     group_id = str(event.group_id)
     msg_user_id = str(event.user_id)
 
-    if any(keyword in text for keyword in ["来康康", "都来康", "来吹逼", "大召唤术"]):
+    if any(
+        keyword in text
+        for keyword in ["来康康", "都来康", "来吹逼", "大召唤术", "召唤一群狗"]
+    ):
         qq_list = [
             item["qq"]
             for item in member_data
@@ -178,7 +182,7 @@ async def handle_quickat(
 
     if qq_list:
         qq_list = list(set(qq_list))
-        msgs = ""
+        msgs = f"{text} "
         for qq in qq_list:
             msgs += MessageSegment.at(qq) + " "
         await matcher.finish(msgs)
