@@ -140,7 +140,7 @@ async def handle_randomat(
     text = msg.extract_plain_text().strip()
     group_id = str(event.group_id)
     msg_user_id = str(event.user_id)
-    msg_user_name = event.sender.nickname
+    msg_user_name = event.sender.card or event.sender.nickname
     bot_qq = str(event.self_id)
     if msg_user_id == bot_qq:
         return
@@ -155,9 +155,8 @@ async def handle_randomat(
         if qq_list:
             qq_list = list(set(qq_list))
             qq = random.choice(qq_list)
-            await matcher.finish(
-                msg_user_name + ": " + text + MessageSegment.at(qq) + " 汪！"
-            )
+            msg_user_name = msg_user_name + "："
+            await matcher.finish(msg_user_name + text + MessageSegment.at(qq) + " 汪！")
         else:
             await matcher.finish("没有可召唤的狗")
 
