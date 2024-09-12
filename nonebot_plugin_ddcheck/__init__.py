@@ -166,7 +166,14 @@ async def handle_quickat(
 
     if any(
         keyword in text
-        for keyword in ["来康康", "都来康", "来吹逼", "大召唤术", "召唤一群狗"]
+        for keyword in [
+            "来康康",
+            "都来康",
+            "来吹逼",
+            "大召唤术",
+            "召唤一群狗",
+            "群狗召唤",
+        ]
     ):
         qq_list = [
             item["qq"]
