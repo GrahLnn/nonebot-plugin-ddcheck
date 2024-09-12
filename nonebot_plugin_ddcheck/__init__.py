@@ -1,5 +1,6 @@
 import asyncio
 import json
+import random
 import traceback
 from pathlib import Path
 
@@ -127,7 +128,30 @@ ask_llm = on_command("", block=True, priority=12)
 
 member = on_command("member", block=True, priority=12)
 quickat = on_command("", block=True, priority=12)
+randomat = on_command("", block=True, priority=12)
 rmmember = on_command("rmm", block=True, priority=12)
+
+
+@randomat.handle()
+async def handle_randomat(
+    matcher: Matcher, event: GroupMessageEvent, msg: Message = CommandArg()
+):
+    text = msg.extract_plain_text().strip()
+    group_id = str(event.group_id)
+    msg_user_id = str(event.user_id)
+    if any(keyword in text for keyword in ["召唤一条狗"]):
+        qq_list = [
+            item["qq"]
+            for item in member_data
+            if item["group_id"] == group_id
+            and str(item["qq"]) != msg_user_id
+            and str(item["qq"]) not in superusers
+        ]
+        if qq_list:
+            qq = random.choice(qq_list)
+            await matcher.finish(MessageSegment.at(qq) + " 汪！")
+        else:
+            await matcher.finish("没有可召唤的狗")
 
 
 @quickat.handle()
@@ -138,7 +162,7 @@ async def handle_quickat(
     group_id = str(event.group_id)
     msg_user_id = str(event.user_id)
 
-    if any(keyword in text for keyword in ["来康康", "都来康", "来吹逼"]):
+    if any(keyword in text for keyword in ["来康康", "都来康", "来吹逼", "大召唤术"]):
         qq_list = [
             item["qq"]
             for item in member_data
