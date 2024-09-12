@@ -140,6 +140,9 @@ async def handle_randomat(
     text = msg.extract_plain_text().strip()
     group_id = str(event.group_id)
     msg_user_id = str(event.user_id)
+    bot_qq = str(event.self_id)
+    if msg_user_id == bot_qq:
+        return
     if any(keyword in text for keyword in ["召唤一条狗", "来条狗", "随机召唤"]):
         qq_list = [
             item["qq"]
