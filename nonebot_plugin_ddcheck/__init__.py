@@ -111,6 +111,7 @@ whenlive = on_command(
     "主包什么时候播",
     aliases={
         "maririn~",
+        "又是想maririn的一天",
         "我要看maririn",
         "我要看maria",
         "等不及了",
@@ -182,7 +183,6 @@ async def handle_quickat(
             "大召唤术",
             "召唤一群狗",
             "群狗召唤",
-            "召唤一群狗",
             "大召唤兽",
         ]
     ):
