@@ -189,9 +189,9 @@ async def handle_quickat(
     group_id = str(event.group_id)
     msg_user_id = str(event.user_id)
     bot_qq = str(event.self_id)
-    print(bot_qq)
+    print(msg_user_id, bot_qq)
     if msg_user_id == bot_qq:
-        return
+        await matcher.finish()
 
     if any(
         keyword in text
