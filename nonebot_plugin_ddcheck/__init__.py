@@ -170,6 +170,7 @@ async def handle_randomat(
             qq_list = list(set(qq_list))
             qq = random.choice(qq_list)
             msg_user_name = msg_user_name + "："
+            text = text.replace("谁是", "这是")
             text = text + " "
             await matcher.finish(text + MessageSegment.at(qq))
         else:
