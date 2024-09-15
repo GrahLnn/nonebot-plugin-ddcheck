@@ -162,7 +162,7 @@ async def handle_randomat(
             item["qq"]
             for item in member_data
             if item["group_id"] == group_id
-            and str(item["qq"]) != msg_user_id
+            # and str(item["qq"]) != msg_user_id
             and str(item["qq"]) not in superusers
         ]
         if qq_list:
