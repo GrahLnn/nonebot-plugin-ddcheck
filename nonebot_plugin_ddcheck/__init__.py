@@ -189,7 +189,6 @@ async def handle_quickat(
     group_id = str(event.group_id)
     msg_user_id = str(event.user_id)
     bot_qq = str(event.self_id)
-    print(msg_user_id, bot_qq)
     if msg_user_id == bot_qq:
         await matcher.finish()
 
@@ -332,9 +331,9 @@ async def handle_binddd(
         # 保存到bind.json
         save_json(bind_file, bind_data)
         await update_timers(bot, vtb_data, ytb_data, bind_data)
-        await matcher.finish(at_message + "绑定成功，回复TD不退订")
+        await matcher.finish(at_message + " 绑定成功，回复TD不退订")
     else:
-        await matcher.finish(at_message + "已经绑定了")
+        await matcher.finish(at_message + " 已经绑定了")
 
 
 @bindrm.handle()
