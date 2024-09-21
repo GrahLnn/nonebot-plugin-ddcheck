@@ -576,4 +576,7 @@ async def send_tweets(bot, groups, bind_data, tweets: list):
                 for image in tweet["images"]:
                     img_bytes = requests.get(image).content
                     message += MessageSegment.image(img_bytes)
+            sys_prompt = """用中文翻译用户的输入内容"""
+            result = openai_completion(tweet["text"], sys_prompt)
+            message += "\ngpt翻译：\n" + result
             await bot.send_group_msg(group_id=group, message=message)
