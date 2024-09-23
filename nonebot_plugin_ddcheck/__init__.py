@@ -143,8 +143,6 @@ invalid_words = [
     "maria ",
     "马力力",
     "玛丽亚",
-    "LW",
-    "lw",
 ]
 
 
