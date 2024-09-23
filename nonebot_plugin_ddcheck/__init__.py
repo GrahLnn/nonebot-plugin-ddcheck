@@ -158,8 +158,7 @@ async def handle_randomat(
     if msg_user_id == bot_qq:
         return
     val = reduce(lambda x, y: x or y, [keyword in text for keyword in invalid_words])
-    if val:
-        await matcher.finish("诶，你没资格~杂古~杂古~~")
+
     if any(
         keyword in text
         for keyword in [
@@ -174,35 +173,38 @@ async def handle_randomat(
             "谁是",
         ]
     ):
-        qq_list = [
-            item["qq"]
-            for item in member_data
-            if item["group_id"] == group_id
-            # and str(item["qq"]) != msg_user_id
-            and str(item["qq"]) not in superusers
-        ]
-        if qq_list:
-            qq_list = list(set(qq_list))
-            qq = random.choice(qq_list)
-            msg_user_name = msg_user_name + "："
-            if str(qq) == msg_user_id:
-                text = (
-                    text.replace("谁是", "不用召唤，你就是")
-                    .replace("随机召唤", "不用召唤，你就是")
-                    .replace("召唤一条狗", "狗来咯")
-                    .replace("来条", "")
-                )
-            else:
-                text = (
-                    text.replace("谁是", "这是")
-                    .replace("随机召唤", "来力")
-                    .replace("召唤一条狗", "狗")
-                    .replace("来条", "")
-                )
-            text = text + " "
-            await matcher.finish(text + MessageSegment.at(qq))
+        if val:
+            await matcher.finish("诶，你没资格~杂古~杂古~~")
         else:
-            await matcher.finish("没有可召唤的狗")
+            qq_list = [
+                item["qq"]
+                for item in member_data
+                if item["group_id"] == group_id
+                # and str(item["qq"]) != msg_user_id
+                and str(item["qq"]) not in superusers
+            ]
+            if qq_list:
+                qq_list = list(set(qq_list))
+                qq = random.choice(qq_list)
+                msg_user_name = msg_user_name + "："
+                if str(qq) == msg_user_id:
+                    text = (
+                        text.replace("谁是", "不用召唤，你就是")
+                        .replace("随机召唤", "不用召唤，你就是")
+                        .replace("召唤一条狗", "狗来咯")
+                        .replace("来条", "")
+                    )
+                else:
+                    text = (
+                        text.replace("谁是", "这是")
+                        .replace("随机召唤", "来力")
+                        .replace("召唤一条狗", "狗")
+                        .replace("来条", "")
+                    )
+                text = text + " "
+                await matcher.finish(text + MessageSegment.at(qq))
+            else:
+                await matcher.finish("没有可召唤的狗")
 
 
 @quickat.handle()
