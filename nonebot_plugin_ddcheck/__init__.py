@@ -191,12 +191,14 @@ async def handle_randomat(
                     text.replace("谁是", "不用召唤，你就是")
                     .replace("随机召唤", "不用召唤，你就是")
                     .replace("召唤一条狗", "狗来咯")
+                    .replace("来条", "")
                 )
             else:
                 text = (
                     text.replace("谁是", "这是")
                     .replace("随机召唤", "来力")
                     .replace("召唤一条狗", "狗")
+                    .replace("来条", "")
                 )
             text = text + " "
             await matcher.finish(text + MessageSegment.at(qq))
