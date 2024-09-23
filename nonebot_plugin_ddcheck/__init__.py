@@ -134,23 +134,24 @@ quickat = on_command("", block=True, priority=12)
 randomat = on_command("", block=True, priority=12)
 rmmember = on_command("rmm", block=True, priority=12)
 
+invalid_words = [
+    "mll",
+    "mio",
+    "maririn",
+    "maria",
+    "maria",
+    "maria ",
+    "马力力",
+    "玛丽亚",
+    "LW",
+    "lw",
+]
+
 
 @randomat.handle()
 async def handle_randomat(
     matcher: Matcher, event: GroupMessageEvent, msg: Message = CommandArg()
 ):
-    invalid_words = [
-        "mll",
-        "mio",
-        "maririn",
-        "maria",
-        "maria",
-        "maria ",
-        "马力力",
-        "玛丽亚",
-        "LW",
-        "lw",
-    ]
     text = msg.extract_plain_text().strip()
     group_id = str(event.group_id)
     msg_user_id = str(event.user_id)
@@ -234,7 +235,20 @@ async def handle_quickat(
             for item in member_data
             if item["group_id"] == group_id and str(item["qq"]) != msg_user_id
         ]
-    else:
+    elif any(
+        kw not in text
+        for kw in [
+            "召唤一条狗",
+            "来条狗",
+            "随机召唤",
+            "随机一条狗",
+            "来条山里灵活的狗",
+            "来条山里灵活的似狗",
+            "来条山里不灵活的狗",
+            "来条山里不灵活的似狗",
+            "谁是",
+        ]
+    ):
         qq_list = [
             item["qq"]
             for item in member_data
