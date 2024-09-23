@@ -1,4 +1,5 @@
 import asyncio
+from functools import reduce
 import json
 import random
 import traceback
@@ -138,6 +139,18 @@ rmmember = on_command("rmm", block=True, priority=12)
 async def handle_randomat(
     matcher: Matcher, event: GroupMessageEvent, msg: Message = CommandArg()
 ):
+    invalid_words = [
+        "mll",
+        "mio",
+        "maririn",
+        "maria",
+        "maria",
+        "maria ",
+        "马力力",
+        "玛丽亚",
+        "LW",
+        "lw",
+    ]
     text = msg.extract_plain_text().strip()
     group_id = str(event.group_id)
     msg_user_id = str(event.user_id)
@@ -145,6 +158,9 @@ async def handle_randomat(
     bot_qq = str(event.self_id)
     if msg_user_id == bot_qq:
         return
+    val = reduce(lambda x, y: x or y, [keyword in text for keyword in invalid_words])
+    if val:
+        await matcher.finish("诶，你没资格~杂古~杂古~~")
     if any(
         keyword in text
         for keyword in [
@@ -170,11 +186,18 @@ async def handle_randomat(
             qq_list = list(set(qq_list))
             qq = random.choice(qq_list)
             msg_user_name = msg_user_name + "："
-            text = (
-                text.replace("谁是", "这是")
-                .replace("随机召唤", "来力")
-                .replace("召唤一条狗", "狗")
-            )
+            if str(qq) == msg_user_id:
+                text = (
+                    text.replace("谁是", "不用召唤，你就是")
+                    .replace("随机召唤", "不用召唤，你就是")
+                    .replace("召唤一条狗", "狗来咯")
+                )
+            else:
+                text = (
+                    text.replace("谁是", "这是")
+                    .replace("随机召唤", "来力")
+                    .replace("召唤一条狗", "狗")
+                )
             text = text + " "
             await matcher.finish(text + MessageSegment.at(qq))
         else:
