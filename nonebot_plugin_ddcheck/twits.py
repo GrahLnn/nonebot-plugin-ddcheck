@@ -57,7 +57,7 @@ async def get_tweets(interval: int = 2):
         # 检查时间差，跳过太旧的推文
         if time_diff > interval * 60:
             logger.info(
-                f"skip old tweet {tweet_data['date']}, published {time_diff} seconds ago"
+                f"skip old tweet {tweet_data['date']}, published {time_diff} seconds ago, content: {tweet_data['text']}"
             )
             continue
 
