@@ -100,7 +100,7 @@ async def check_timers(bot, vtb_data, ytb_data, bind_data):
             logger.error("TimeoutError: Failed to update timers. Retrying...")
         except Exception as e:
             logger.error(f"Unexpected error: {e}")
-        await asyncio.sleep(3600)  # 每小时检查一次
+        await asyncio.sleep(1800)  # 每半小时检查一次
 
 
 async def update_timers(bot, vtb_data, ytb_data, bind_data):
