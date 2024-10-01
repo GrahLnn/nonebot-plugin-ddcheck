@@ -1,11 +1,11 @@
 import requests
 from retry import retry
+from requests.exceptions import RequestException
 
 from .config import ddcheck_config
 
 OPENAI_URL = ddcheck_config.openai_base_url
 OPENAI_KEY = ddcheck_config.openai_api_key
-
 
 def openai_completion(
     prompt, system_message=None, temperature=0.3, model="gpt-4o-mini", json_output=False
@@ -30,7 +30,7 @@ def openai_completion(
     return answer
 
 
-@retry(tries=5, delay=2)
+@retry(exceptions=RequestException, tries=5, delay=2, backoff=2, jitter=(1, 3))
 def call_api(url, access_token, data):
     headers = {
         "Authorization": f"Bearer {access_token}",
@@ -39,5 +39,4 @@ def call_api(url, access_token, data):
 
     response = requests.post(url, headers=headers, json=data)
     response.raise_for_status()
-    res = response.json()
-    return res
+    return response.json()
