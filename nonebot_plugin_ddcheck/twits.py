@@ -34,8 +34,11 @@ async def get_tweets(interval: int = 2):
         tweet_data = {}
 
         # 获取推文的文本内容
-        text = tweet.ele('xpath:.//div[@data-testid="tweetText"]').text
-        tweet_data["text"] = text
+        try:
+            text = tweet.ele('xpath:.//div[@data-testid="tweetText"]').text
+            tweet_data["text"] = text
+        except Exception:
+            continue
 
         # 获取推文的日期
         date_element = tweet.ele("xpath:.//time")
