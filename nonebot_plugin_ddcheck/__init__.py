@@ -379,6 +379,8 @@ async def handle_binddd(
 async def handle_bindrm(
     bot: Bot, matcher: Matcher, event: GroupMessageEvent, msg: Message = CommandArg()
 ):
+    if str(event.user_id) not in superusers:
+        await matcher.finish("你不是管理员，离开")
     at_segment = msg["at"]
     if not at_segment:
         await matcher.finish("请@要解绑的用户")
