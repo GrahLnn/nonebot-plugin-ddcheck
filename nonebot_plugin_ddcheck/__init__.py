@@ -389,20 +389,18 @@ async def handle_bindrm(
     target_qq = at_segment[0].data["qq"]
     group_id = str(event.group_id)
     global bind_data
-    targets = [item["target_qq"] for item in bind_data if item["group_id"] == group_id]
-    at_message = MessageSegment.at(target_qq)
-    if target_qq in targets:
-        bind_data = [
-            item
-            for item in bind_data
-            if item["target_qq"] != target_qq and item["group_id"] != group_id
-        ]
-        save_json(bind_file, bind_data)
 
-        await update_timers(bot, vtb_data, ytb_data, bind_data)
-        await matcher.finish(at_message + "解绑成功")
-    else:
-        await matcher.finish(at_message + "并没有绑定")
+    at_message = MessageSegment.at(target_qq)
+
+    # 只删除特定群内的特定QQ绑定
+    for item in bind_data:
+        if item["group_id"] == group_id and item["target_qq"] == target_qq:
+            bind_data.remove(item)
+            save_json(bind_file, bind_data)
+            await update_timers(bot, vtb_data, ytb_data, bind_data)
+            await matcher.finish(at_message + "解绑成功")
+
+    await matcher.finish(at_message + "并没有绑定")
 
 
 @bindall.handle()
