@@ -127,6 +127,7 @@ whenlive = on_command(
 )
 binddd = on_command("bind", block=True, priority=12)
 bindrm = on_command("bindrm", block=True, priority=12)
+bindall = on_command("bindall", block=True, priority=12)
 ask_llm = on_command("", block=True, priority=12)
 
 member = on_command("member", block=True, priority=12)
@@ -402,6 +403,13 @@ async def handle_bindrm(
         await matcher.finish(at_message + "解绑成功")
     else:
         await matcher.finish(at_message + "并没有绑定")
+
+
+@bindall.handle()
+async def handle_bindall(
+    bot: Bot, matcher: Matcher, event: GroupMessageEvent, msg: Message = CommandArg()
+):
+    await matcher.finish(str(bind_data))
 
 
 @ddcheck.handle()
