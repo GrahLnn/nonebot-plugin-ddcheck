@@ -572,15 +572,15 @@ async def handle_rmdd(matcher: Matcher, msg: Message = CommandArg()):
 @whenlive.handle()
 async def handle_whenlive(bot: Bot, matcher: Matcher, msg: Message = CommandArg()):
     records = []
-    for item in vtb_data:
-        live_info = await get_upcoming_bili_live(item["uid"])
-        logger.info(live_info)
-        if live_info:
-            records.append(
-                f"{item['nickname']}{get_formatted_time_left(live_info['release_time'])}(bilibili)"
-            )
-        else:
-            records.append(f"{item['nickname']}还没有发布bilibili的直播预告")
+    # for item in vtb_data:
+    #     live_info = await get_upcoming_bili_live(item["uid"])
+    #     logger.info(live_info)
+    #     if live_info:
+    #         records.append(
+    #             f"{item['nickname']}{get_formatted_time_left(live_info['release_time'])}(bilibili)"
+    #         )
+    #     else:
+    #         records.append(f"{item['nickname']}还没有发布bilibili的直播预告")
     for item in ytb_data:
         live_info = await get_upcoming_youtube_live(item["id"])
         logger.info(live_info)
