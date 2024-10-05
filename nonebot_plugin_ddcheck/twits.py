@@ -35,7 +35,7 @@ async def get_tweets(interval: int = 2):
 
         # 获取推文的文本内容
         try:
-            text = tweet.ele('xpath:.//div[@data-testid="tweetText"]').text
+            text = tweet.ele('xpath:.//div[@data-testid="tweetText"]').inner_text
             tweet_data["text"] = text
         except Exception:
             continue
