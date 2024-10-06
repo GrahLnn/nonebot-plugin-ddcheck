@@ -79,7 +79,7 @@ async def get_tweets(interval: int = 2):
         if time_diff > interval * 60:
             formatted_time_diff = format_time_diff(time_diff)
             logger.info(
-                f"skip old tweet {tweet_data['date']}, published {formatted_time_diff} ago, content: {tweet_data['text']}"
+                f"{tweet_data['date']}-{formatted_time_diff} ago, content:\n{tweet_data['text']}"
             )
             continue
 
