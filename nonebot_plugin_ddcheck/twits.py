@@ -79,13 +79,12 @@ async def get_tweets(interval: int = 2):
         current_dt = datetime.now(timezone.utc)
         current_timestamp = int(current_dt.timestamp())
         time_diff = current_timestamp - timestamp
-
+        formatted_time_diff = format_time_diff(time_diff)
+        logger.info(
+            f"{tweet_data['date']}-{formatted_time_diff}前:\n{tweet_data['text']}"
+        )
         # 检查时间差，跳过太旧的推文
         if time_diff > interval * 60:
-            formatted_time_diff = format_time_diff(time_diff)
-            logger.info(
-                f"{tweet_data['date']}-{formatted_time_diff} ago, content:\n{tweet_data['text']}"
-            )
             continue
 
         # 获取作者名称和用户名
