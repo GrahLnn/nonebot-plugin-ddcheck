@@ -58,7 +58,7 @@ async def get_tweets(interval: int = 2):
                 if child.tag == "img":
                     text_content.append(child.attr("alt"))
                 else:
-                    text_content.append(child.text)
+                    text_content.append(child.raw_text)
             tweet_data["text"] = "".join(filter(None, text_content))
         except Exception:
             continue
