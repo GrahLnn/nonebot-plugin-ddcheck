@@ -52,9 +52,14 @@ async def get_tweets(interval: int = 2):
 
         # 获取推文的文本内容
         try:
-            text = tweet.ele('xpath:.//div[@data-testid="tweetText"]').text
-            # logger.info(text)
-            tweet_data["text"] = text
+            text_ele = tweet.ele('xpath:.//div[@data-testid="tweetText"]')
+            text_content = []
+            for child in text_ele.eles("xpath:.//*"):
+                if child.tag == "img":
+                    text_content.append(child.attr("alt"))
+                else:
+                    text_content.append(child.text)
+            tweet_data["text"] = "".join(filter(None, text_content))
         except Exception:
             continue
 
