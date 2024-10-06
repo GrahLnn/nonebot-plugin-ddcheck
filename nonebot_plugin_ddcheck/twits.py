@@ -1,5 +1,5 @@
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from nonebot.log import logger
 from DrissionPage import ChromiumOptions, ChromiumPage
 
@@ -19,6 +19,23 @@ driver.set.window.max()
 driver.get(url)
 
 
+def format_time_diff(seconds):
+    td = timedelta(seconds=seconds)
+    days, remainder = divmod(td.seconds, 86400)
+    hours, remainder = divmod(remainder, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    parts = []
+    if td.days:
+        parts.append(f"{td.days}天")
+    if hours:
+        parts.append(f"{hours}小时")
+    if minutes:
+        parts.append(f"{minutes}分钟")
+    if seconds:
+        parts.append(f"{seconds}秒")
+    return "".join(parts)
+
+
 async def get_tweets(interval: int = 2):
     tweets_data = []
     driver.refresh()
@@ -36,7 +53,7 @@ async def get_tweets(interval: int = 2):
         # 获取推文的文本内容
         try:
             text = tweet.ele('xpath:.//div[@data-testid="tweetText"]').text
-            logger.info(text)
+            # logger.info(text)
             tweet_data["text"] = text
         except Exception:
             continue
@@ -60,8 +77,9 @@ async def get_tweets(interval: int = 2):
 
         # 检查时间差，跳过太旧的推文
         if time_diff > interval * 60:
+            formatted_time_diff = format_time_diff(time_diff)
             logger.info(
-                f"skip old tweet {tweet_data['date']}, published {time_diff} seconds ago, content: {tweet_data['text']}"
+                f"skip old tweet {tweet_data['date']}, published {formatted_time_diff} ago, content: {tweet_data['text']}"
             )
             continue
 
