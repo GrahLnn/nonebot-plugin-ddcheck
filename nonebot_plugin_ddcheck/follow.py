@@ -21,7 +21,7 @@ async def get_upcoming_bili_live(uid):
     except Exception as e:
         logger.error(f"Error fetching live info for UID: {uid} - {e}")
         raise
-    
+
     if data:
         space_info = await u.get_live_info()
         live_room_url = space_info["live_room"]["url"]
@@ -130,6 +130,20 @@ async def update_timers(bot, vtb_data, ytb_data, bind_data):
             release_time = live_info["release_time"]
             logger.info(f"{ytb['nickname']}, {get_formatted_time_left(release_time)}")
             if ytb["id"] not in timers:
+                await add_timer(
+                    ytb["nickname"],
+                    ytb["id"],
+                    release_time,
+                    ytb["sub_group"],
+                    live_info["url"],
+                    bot,
+                    bind_data,
+                    live_info["title"],
+                )
+            elif (
+                abs(timers[ytb["id"]].get_name() - release_time) > 60
+            ):  # 允许1分钟的误差
+                timers[ytb["id"]].cancel()
                 await add_timer(
                     ytb["nickname"],
                     ytb["id"],
