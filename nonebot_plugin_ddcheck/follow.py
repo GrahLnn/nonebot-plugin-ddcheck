@@ -9,6 +9,7 @@ from nonebot.log import logger
 from retry import retry
 
 timers = {}
+timer_info = {}
 
 
 # 获取B站直播预约信息
@@ -87,9 +88,11 @@ async def add_timer(
     if delay <= 0:
         return
 
-    timers[uid_or_id] = asyncio.create_task(
+    task = asyncio.create_task(
         timer_task(nickname, delay, url, sub_groups, bot, bind_data, uid_or_id, title)
     )
+    timers[uid_or_id] = task
+    timer_info[uid_or_id] = {"release_time": release_time}  # 存储额外信息
 
 
 async def check_timers(bot, vtb_data, ytb_data, bind_data):
@@ -141,8 +144,10 @@ async def update_timers(bot, vtb_data, ytb_data, bind_data):
                     live_info["title"],
                 )
             else:
-                stored_time = float(timers[ytb["id"]].get_name())
-                if abs(stored_time - release_time) > 60:
+                stored_time = timer_info[ytb["id"]][
+                    "release_time"
+                ]  # 获取存储的 release_time
+                if abs(stored_time - release_time) > 60:  # 允许1分钟的误差
                     timers[ytb["id"]].cancel()
                     await add_timer(
                         ytb["nickname"],
