@@ -140,20 +140,20 @@ async def update_timers(bot, vtb_data, ytb_data, bind_data):
                     bind_data,
                     live_info["title"],
                 )
-            elif (
-                abs(timers[ytb["id"]].get_name() - release_time) > 60
-            ):  # 允许1分钟的误差
-                timers[ytb["id"]].cancel()
-                await add_timer(
-                    ytb["nickname"],
-                    ytb["id"],
-                    release_time,
-                    ytb["sub_group"],
-                    live_info["url"],
-                    bot,
-                    bind_data,
-                    live_info["title"],
-                )
+            else:
+                stored_time = float(timers[ytb["id"]].get_name())
+                if abs(stored_time - release_time) > 60:
+                    timers[ytb["id"]].cancel()
+                    await add_timer(
+                        ytb["nickname"],
+                        ytb["id"],
+                        release_time,
+                        ytb["sub_group"],
+                        live_info["url"],
+                        bot,
+                        bind_data,
+                        live_info["title"],
+                    )
     logger.info(f"count timers: {len(timers)}")
 
 
