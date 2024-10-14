@@ -103,7 +103,7 @@ async def get_tweets(interval: int = 2):
         # 获取推文中的图片链接
         image_elements = tweet.eles("xpath:.//img[@src]")
         image_urls = [
-            img.attr("src")
+            img.attr("src").replace("?format=jpg&name=small", "?format=jpg&name=large")
             for img in image_elements
             if "pbs.twimg.com/media" in img.attr("src")
         ]
