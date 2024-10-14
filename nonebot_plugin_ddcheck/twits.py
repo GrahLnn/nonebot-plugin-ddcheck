@@ -36,6 +36,21 @@ def format_time_diff(seconds):
     return "".join(parts)
 
 
+def tw_content(tweet_ele):
+    text_ele = tweet_ele.ele("@data-testid=tweetText", timeout=0)
+    if not text_ele:
+        return ""
+    text_content = []
+    for child in text_ele.children():
+        if child.tag == "img":
+            text_content.append(child.attr("alt"))
+        elif child.tag == "a":
+            text_content.append(child.raw_text.strip("…"))
+        else:
+            text_content.append(child.raw_text)
+    return "".join(filter(None, text_content))
+
+
 async def get_tweets(interval: int = 2):
     tweets_data = []
     driver.refresh()
@@ -51,20 +66,7 @@ async def get_tweets(interval: int = 2):
         tweet_data = {}
 
         # 获取推文的文本内容
-        try:
-            text_ele = tweet.ele('xpath:.//div[@data-testid="tweetText"]')
-            if not text_ele:
-                tweet_data["text"] = ""
-            else:
-                text_content = []
-                for child in text_ele.eles("xpath:.//*"):
-                    if child.tag == "img":
-                        text_content.append(child.attr("alt"))
-                    else:
-                        text_content.append(child.raw_text)
-                tweet_data["text"] = "".join(filter(None, text_content))
-        except Exception:
-            continue
+        tweet_data["text"] = tw_content(tweet)
 
         # 获取推文的日期
         date_element = tweet.ele("xpath:.//time")
