@@ -624,7 +624,7 @@ async def send_tweets(bot, groups, bind_data, tweets: list):
                     img_bytes = requests.get(image).content
                     message += MessageSegment.image(img_bytes)
             if tweet.get("text"):
-                sys_prompt = """用中文翻译用户的输入内容"""
+                sys_prompt = """用中文翻译用户的输入内容，以下词表不翻译\n["Mariring", "maririn]"""
                 result = openai_completion(tweet["text"], sys_prompt)
                 message += "\n\n翻译：\n" + result
             await bot.send_group_msg(group_id=group, message=message)
