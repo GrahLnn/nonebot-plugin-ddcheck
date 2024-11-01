@@ -137,7 +137,6 @@ rmmember = on_command("rmm", block=True, priority=12)
 
 invalid_words = [
     "mll",
-    "mio",
     "maririn",
     "maria",
     "maria",
