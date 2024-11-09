@@ -614,7 +614,13 @@ async def handle_whenlive(bot: Bot, matcher: Matcher, msg: Message = CommandArg(
 async def watch_tweets(bot, vtb_data, bind_data):
     interval = 10
     while True:
-        tweets = await get_tweets(interval)
+        try:
+            tweets = await get_tweets(interval)
+        except Exception as e:
+            msg = f"get_tweets error: {e}"
+            for group in vtb_data[0]["sub_group"]:
+                await bot.send_group_msg(group_id=group, message=msg)
+            continue
         unique_tweets = {tweet["text"]: tweet for tweet in tweets}.values()
         tweets = list(unique_tweets)
         logger.info(f"valid tweets: {len(tweets)}")
