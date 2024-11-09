@@ -96,8 +96,23 @@ driver = nonebot.get_driver()
 @driver.on_bot_connect
 async def _():
     bot = get_bot()
-    asyncio.create_task(check_timers(bot, vtb_data, ytb_data, bind_data))
-    asyncio.create_task(watch_tweets(bot, vtb_data, bind_data))
+
+    async def run_with_retry(coro, name):
+        while True:
+            try:
+                await coro
+            except Exception as e:
+                logger.error(f"{name} task crashed: {e}")
+                logger.error(traceback.format_exc())
+                await asyncio.sleep(5)  # 等待5秒后重试
+                logger.info(f"Restarting {name} task...")
+
+    asyncio.create_task(
+        run_with_retry(check_timers(bot, vtb_data, ytb_data, bind_data), "check_timers")
+    )
+    asyncio.create_task(
+        run_with_retry(watch_tweets(bot, vtb_data, bind_data), "watch_tweets")
+    )
 
 
 ddcheck = on_command("查成分", aliases={"ccf"}, block=True, priority=12)
@@ -337,7 +352,7 @@ async def handle_message(
     if event.is_tome():
         sys_prompt = """你会用可爱的语气回答并喜爱在句子结束加入"喵~"的衬词，你当前的身份是「maririn的狗」，仅使用中文回复。
         指南：
-        - 若用户询问意图求得鼓励的问题，以正面肯定的态度支持"""
+        - 若用户询问意图���得鼓励的问题，以正面肯定的态度支持"""
         text = msg.extract_plain_text()
         result = openai_completion(text, sys_prompt)
         sender_id = event.user_id
