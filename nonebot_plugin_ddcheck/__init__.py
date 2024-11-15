@@ -178,7 +178,7 @@ async def handle_randomat(
         keyword in text
         for keyword in [
             "召唤一条狗",
-            "来条狗",
+            "来条",
             "随机召唤",
             "随机一条狗",
             "来条山里灵活的狗",
