@@ -127,6 +127,7 @@ whenlive = on_command(
     "主包什么时候播",
     aliases={
         "maririn~",
+        "maririn～",
         "又是想maririn的一天",
         "我要看maririn",
         "我要看maria",
