@@ -618,7 +618,8 @@ async def watch_tweets(bot, vtb_data, bind_data):
         try:
             tweets = await get_tweets(interval)
         except Exception as e:
-            msg = f"get_tweets error: {e}"
+            exc = traceback.format_exc()
+            msg = f"58是狗，retry， error: {e}\n\n{exc}"
             for group in vtb_data[0]["sub_group"]:
                 await bot.send_group_msg(group_id=group, message=msg)
             continue
@@ -634,6 +635,11 @@ async def send_tweets(bot, groups, bind_data, tweets: list):
     if not tweets:
         return
     for tweet in tweets:
+        if tweet.get("text"):
+            sys_prompt = (
+                """用中文翻译用户的输入内容，以下词表不翻译\n["Mariring", "maririn]"""
+            )
+            result = openai_completion(tweet["text"], sys_prompt)
         for group in groups:
             message = ""
             for bind in bind_data:
@@ -644,8 +650,6 @@ async def send_tweets(bot, groups, bind_data, tweets: list):
                 for image in tweet["images"]:
                     img_bytes = requests.get(image).content
                     message += MessageSegment.image(img_bytes)
-            if tweet.get("text"):
-                sys_prompt = """用中文翻译用户的输入内容，以下词表不翻译\n["Mariring", "maririn]"""
-                result = openai_completion(tweet["text"], sys_prompt)
-                message += "\n\n翻译：\n" + result
+
+            message += "\n\n翻译：\n" + result
             await bot.send_group_msg(group_id=group, message=message)
