@@ -93,6 +93,13 @@ member_data = load_json(member_file)
 driver = nonebot.get_driver()
 
 
+# 用于追踪任务状态
+_task_running = {
+    "check_timers": False,
+    "watch_tweets": False
+}
+
+
 @driver.on_bot_connect
 async def _():
     bot = get_bot()
@@ -107,12 +114,20 @@ async def _():
                 await asyncio.sleep(5)  # 等待5秒后重试
                 logger.info(f"Restarting {name} task...")
 
-    asyncio.create_task(
-        run_with_retry(check_timers(bot, vtb_data, ytb_data, bind_data), "check_timers")
-    )
-    asyncio.create_task(
-        run_with_retry(watch_tweets(bot, vtb_data, bind_data), "watch_tweets")
-    )
+    # 只有在任务未运行时才创建新任务
+    if not _task_running["check_timers"]:
+        _task_running["check_timers"] = True
+        asyncio.create_task(
+            run_with_retry(check_timers(bot, vtb_data, ytb_data, bind_data), "check_timers")
+        )
+        logger.info("Created check_timers task")
+
+    if not _task_running["watch_tweets"]:
+        _task_running["watch_tweets"] = True
+        asyncio.create_task(
+            run_with_retry(watch_tweets(bot, vtb_data, bind_data), "watch_tweets")
+        )
+        logger.info("Created watch_tweets task")
 
 
 ddcheck = on_command("查成分", aliases={"ccf"}, block=True, priority=12)
