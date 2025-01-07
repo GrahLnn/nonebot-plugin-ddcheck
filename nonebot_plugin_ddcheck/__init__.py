@@ -652,9 +652,10 @@ async def send_tweets(bot, groups, bind_data, tweets: list):
     for tweet in tweets:
         if tweet.get("text"):
             sys_prompt = (
-                """用中文翻译用户的输入内容，以下词表不翻译\n["Mariring", "maririn]"""
+                """You are a professional translation engine, please translate the text into a colloquial, professional, elegant and fluent content, without the style of machine translation. You must only translate the text content, never interpret it."""
             )
-            result = openai_completion(tweet["text"], sys_prompt)
+            prompt = f"""Translate into zh-hans: \n---\n{tweet["text"]}"""
+            result = openai_completion(prompt, sys_prompt)
         for group in groups:
             message = ""
             for bind in bind_data:
