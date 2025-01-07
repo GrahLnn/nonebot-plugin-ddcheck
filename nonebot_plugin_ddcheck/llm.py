@@ -20,6 +20,7 @@ def openai_completion(
     data = {
         "model": model,
         "temperature": temperature,
+        "top_p": 0.99,
         "messages": message,
         "stream": False,
         "response_format": {"type": "json_object"} if json_output else None,
