@@ -122,12 +122,12 @@ async def _():
         )
         logger.info("Created check_timers task")
 
-    if not _task_running["watch_tweets"]:
-        _task_running["watch_tweets"] = True
-        asyncio.create_task(
-            run_with_retry(watch_tweets(bot, vtb_data, bind_data), "watch_tweets")
-        )
-        logger.info("Created watch_tweets task")
+    # if not _task_running["watch_tweets"]:
+    #     _task_running["watch_tweets"] = True
+    #     asyncio.create_task(
+    #         run_with_retry(watch_tweets(bot, vtb_data, bind_data), "watch_tweets")
+    #     )
+    #     logger.info("Created watch_tweets task")
 
 
 ddcheck = on_command("查成分", aliases={"ccf"}, block=True, priority=12)
