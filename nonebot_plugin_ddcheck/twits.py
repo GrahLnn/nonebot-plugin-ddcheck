@@ -386,25 +386,23 @@ async def get_tweets(interval: int = 2):
     for t in tweets:
         time_format = "%a %b %d %H:%M:%S %z %Y"
         time = datetime.strptime(get(t, "created_at"), time_format)
+        fil = {
+            "text": get(t, "content.text"),
+            "medias": [{"url": m.get("url"), "type": m.get("type")} for m in medias]
+            if (medias := t.get("media"))
+            else None,
+            "quote": {
+                "text": get(t, "quote.content.text"),
+                "medias": [{"url": m.get("url"), "type": m.get("type")} for m in medias]
+                if (medias := t.get("media"))
+                else None,
+            }
+            if t.get("quote")
+            else None,
+        }
+        print(json.dumps(fil, ensure_ascii=False, indent=2))
         if (datetime.now(timezone.utc) - time).seconds > interval * 60 or get(
             t, "author.screen_name"
         ) != user:
             continue
-        tweets_data.append(
-            {
-                "text": get(t, "content.text"),
-                "medias": [{"url": m.get("url"), "type": m.get("type")} for m in medias]
-                if (medias := t.get("media"))
-                else None,
-                "quote": {
-                    "text": get(t, "quote.content.text"),
-                    "medias": [
-                        {"url": m.get("url"), "type": m.get("type")} for m in medias
-                    ]
-                    if (medias := t.get("media"))
-                    else None,
-                }
-                if t.get("quote")
-                else None,
-            }
-        )
+        tweets_data.append(fil)

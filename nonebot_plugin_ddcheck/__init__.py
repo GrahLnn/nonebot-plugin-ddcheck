@@ -706,6 +706,7 @@ async def send_tweets(bot, groups, bind_data, tweets: list):
 
                             # 将 GIF 发送为图片
                             message += MessageSegment.image(gif_buffer)
+                message += "\n==========\n"
 
             message += "\n\n翻译：\n" + result
             await bot.send_group_msg(group_id=group, message=message)
