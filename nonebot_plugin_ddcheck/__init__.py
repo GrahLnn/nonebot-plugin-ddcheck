@@ -9,7 +9,7 @@ from pathlib import Path
 import nonebot
 import requests
 import yt_dlp
-from moviepy.editor import VideoFileClip
+from moviepy import VideoFileClip
 from nonebot import get_bot, get_driver, on_command, require
 from nonebot.adapters import Message
 from nonebot.adapters.onebot.v11 import (
