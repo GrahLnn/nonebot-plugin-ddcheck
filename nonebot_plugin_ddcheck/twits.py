@@ -12,10 +12,12 @@ import httpx
 # from DrissionPage import ChromiumOptions, ChromiumPage
 from nonebot.log import logger
 from requests import RequestException
-from retry import retry
+from retry import retry as lretry
 from returns.maybe import Maybe, Nothing, Some
 
 from .config import ddcheck_config
+
+from tenacity import retry, stop_after_attempt, wait_fixed
 
 auth_token = ""
 tweet_api_key = ddcheck_config.tweet_api_key
@@ -103,6 +105,7 @@ class Tweet:
                 cookie_dict[key.strip()] = value.strip()
         return Some(cookie_dict)
 
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(3))
     def search(self, username):
         variables = json.dumps(
             {
@@ -366,7 +369,6 @@ class Tweet:
         return {**parse_tweet(data), "quote": parse_tweet(quote)}
 
 
-@retry(exceptions=(RequestException, Exception), tries=3, delay=2)
 async def get_tweets(interval: int = 2):
     tweets_data = []
     tweet = Tweet()
@@ -401,7 +403,7 @@ async def get_tweets(interval: int = 2):
             else None,
         }
         # print(json.dumps(fil, ensure_ascii=False))
-        if (datetime.now(timezone.utc) - time).seconds > interval * 60 or get(
+        if (datetime.now(timezone.utc) - time).total_seconds() > interval * 60 or get(
             t, "author.screen_name"
         ) != user:
             continue
