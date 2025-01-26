@@ -400,7 +400,7 @@ async def get_tweets(interval: int = 2):
             if t.get("quote")
             else None,
         }
-        print(json.dumps(fil, ensure_ascii=False, indent=2))
+        print(json.dumps(fil, ensure_ascii=False))
         if (datetime.now(timezone.utc) - time).seconds > interval * 60 or get(
             t, "author.screen_name"
         ) != user:

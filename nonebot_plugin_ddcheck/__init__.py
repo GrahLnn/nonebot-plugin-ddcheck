@@ -629,7 +629,7 @@ async def handle_whenlive(bot: Bot, matcher: Matcher, msg: Message = CommandArg(
 
 
 async def watch_tweets(bot, vtb_data, bind_data):
-    interval = 10
+    interval = 2
     while True:
         try:
             tweets = await get_tweets(interval)
