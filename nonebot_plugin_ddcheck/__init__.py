@@ -1,13 +1,15 @@
 import asyncio
-from functools import reduce
 import json
 import random
 import traceback
+from functools import reduce
+from io import BytesIO
 from pathlib import Path
 
 import nonebot
 import requests
 import yt_dlp
+from moviepy.editor import VideoFileClip
 from nonebot import get_bot, get_driver, on_command, require
 from nonebot.adapters import Message
 from nonebot.adapters.onebot.v11 import (
@@ -94,10 +96,7 @@ driver = nonebot.get_driver()
 
 
 # 用于追踪任务状态
-_task_running = {
-    "check_timers": False,
-    "watch_tweets": False
-}
+_task_running = {"check_timers": False, "watch_tweets": False}
 
 
 @driver.on_bot_connect
@@ -118,16 +117,18 @@ async def _():
     if not _task_running["check_timers"]:
         _task_running["check_timers"] = True
         asyncio.create_task(
-            run_with_retry(check_timers(bot, vtb_data, ytb_data, bind_data), "check_timers")
+            run_with_retry(
+                check_timers(bot, vtb_data, ytb_data, bind_data), "check_timers"
+            )
         )
         logger.info("Created check_timers task")
 
-    # if not _task_running["watch_tweets"]:
-    #     _task_running["watch_tweets"] = True
-    #     asyncio.create_task(
-    #         run_with_retry(watch_tweets(bot, vtb_data, bind_data), "watch_tweets")
-    #     )
-    #     logger.info("Created watch_tweets task")
+    if not _task_running["watch_tweets"]:
+        _task_running["watch_tweets"] = True
+        asyncio.create_task(
+            run_with_retry(watch_tweets(bot, vtb_data, bind_data), "watch_tweets")
+        )
+        logger.info("Created watch_tweets task")
 
 
 ddcheck = on_command("查成分", aliases={"ccf"}, block=True, priority=12)
@@ -651,9 +652,7 @@ async def send_tweets(bot, groups, bind_data, tweets: list):
         return
     for tweet in tweets:
         if tweet.get("text"):
-            sys_prompt = (
-                """You are a professional translation engine, please translate the text into a colloquial, professional, elegant and fluent content, without the style of machine translation. You must only translate the text content, never interpret it."""
-            )
+            sys_prompt = """You are a professional translation engine, please translate the text into a colloquial, professional, elegant and fluent content, without the style of machine translation. You must only translate the text content, never interpret it."""
             prompt = f"""Translate into zh-hans: \n---\n{tweet["text"]}"""
             result = openai_completion(prompt, sys_prompt)
         for group in groups:
@@ -662,10 +661,51 @@ async def send_tweets(bot, groups, bind_data, tweets: list):
                 if bind["group_id"] == str(group):
                     message += MessageSegment.at(bind["target_qq"]) + " "
             message += "\nMaria发推：\n" + tweet["text"]
-            if tweet.get("images"):
-                for image in tweet["images"]:
-                    img_bytes = requests.get(image).content
-                    message += MessageSegment.image(img_bytes)
+            if tweet.get("medias"):
+                for media in tweet["medias"]:
+                    if media.get("type") == "photo":
+                        image = media["url"]
+                        img_bytes = requests.get(image).content
+                        message += MessageSegment.image(img_bytes)
+                    elif media.get("type") == "animated_gif":
+                        video = media["url"]
+                        video_bytes = requests.get(video).content
+                        # 将视频内容保存到内存中
+                        video_buffer = BytesIO(video_bytes)
+
+                        # 使用 moviepy 将视频转换为 GIF
+                        with VideoFileClip(video_buffer) as clip:
+                            # 转换为 GIF 并保存到内存
+                            gif_buffer = BytesIO()
+                            clip.write_gif(gif_buffer)  # fps 可调，影响大小和流畅度
+                            gif_buffer.seek(0)
+
+                        # 将 GIF 发送为图片
+                        message += MessageSegment.image(gif_buffer)
+
+            if q := tweet.get("quote"):
+                message += "\n==========\n" + q.get("text", "")
+                if q.get("medias"):
+                    for media in q["medias"]:
+                        if media.get("type") == "photo":
+                            image = media["url"]
+                            img_bytes = requests.get(image).content
+                            message += MessageSegment.image(img_bytes)
+                        elif media.get("type") == "animated_gif":
+                            video = media["url"]
+                            video_bytes = requests.get(video).content
+                            # 将视频内容保存到内存中
+                            video_buffer = BytesIO(video_bytes)
+
+                            # 使用 moviepy 将视频转换为 GIF
+                            with VideoFileClip(video_buffer) as clip:
+                                # 转换为 GIF 并保存到内存
+                                gif_buffer = BytesIO()
+                                clip.write_gif(gif_buffer)
+                                gif_buffer.seek(0)
+
+                            # 将 GIF 发送为图片
+                            message += MessageSegment.image(gif_buffer)
 
             message += "\n\n翻译：\n" + result
             await bot.send_group_msg(group_id=group, message=message)
