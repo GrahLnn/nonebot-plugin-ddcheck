@@ -406,3 +406,4 @@ async def get_tweets(interval: int = 2):
         ) != user:
             continue
         tweets_data.append(fil)
+    return tweets_data
