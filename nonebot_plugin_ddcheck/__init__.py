@@ -630,15 +630,25 @@ async def handle_whenlive(bot: Bot, matcher: Matcher, msg: Message = CommandArg(
 
 async def watch_tweets(bot, vtb_data, bind_data):
     interval = 2
+    error_count = 0
     while True:
         try:
             tweets = await get_tweets(interval)
+            error_count = 0
         except Exception as e:
             exc = traceback.format_exc()
+            error_count += 1
             msg = f"58是狗，retry， error: {e}\n\n{exc}"
             for group in vtb_data[0]["sub_group"]:
                 await bot.send_group_msg(group_id=group, message=msg)
             continue
+
+        if error_count >= 3:
+            for group in vtb_data[0]["sub_group"]:
+                await bot.send_group_msg(
+                    group_id=group, message="retry too many times, now stop"
+                )
+            raise Exception("retry too many times")
         unique_tweets = {tweet["text"]: tweet for tweet in tweets}.values()
         tweets = list(unique_tweets)
         logger.info(f"valid tweets: {len(tweets)}")
