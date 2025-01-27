@@ -632,6 +632,12 @@ async def watch_tweets(bot, vtb_data, bind_data):
     interval = 2
     error_count = 0
     while True:
+        if error_count >= 3:
+            for group in vtb_data[0]["sub_group"]:
+                await bot.send_group_msg(
+                    group_id=group, message="retry too many times, now stop"
+                )
+            raise Exception("retry too many times")
         try:
             tweets = await get_tweets(interval)
             error_count = 0
@@ -643,12 +649,6 @@ async def watch_tweets(bot, vtb_data, bind_data):
                 await bot.send_group_msg(group_id=group, message=msg)
             continue
 
-        if error_count >= 3:
-            for group in vtb_data[0]["sub_group"]:
-                await bot.send_group_msg(
-                    group_id=group, message="retry too many times, now stop"
-                )
-            raise Exception("retry too many times")
         unique_tweets = {tweet["text"]: tweet for tweet in tweets}.values()
         tweets = list(unique_tweets)
         logger.info(f"valid tweets: {len(tweets)}")
