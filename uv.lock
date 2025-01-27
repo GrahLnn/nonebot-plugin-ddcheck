@@ -1,0 +1,18 @@
+version = 1
+requires-python = ">=3.11"
+
+[[package]]
+name = "nonebot-plugin-ddcheck"
+version = "0.4.0"
+source = { editable = "." }
+dependencies = [
+    { name = "poolctrl" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "poolctrl", git = "https://github.com/GrahLnn/poolctrl.git" }]
+
+[[package]]
+name = "poolctrl"
+version = "0.1.0"
+source = { git = "https://github.com/GrahLnn/poolctrl.git#a0ddb5fb526f8564b4ddf862103264aa1ffaf677" }

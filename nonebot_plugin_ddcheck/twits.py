@@ -11,27 +11,41 @@ import httpx
 
 # from DrissionPage import ChromiumOptions, ChromiumPage
 from nonebot.log import logger
+from poolctrl import Pool, RateLimitRule
 from requests import RequestException
 from retry import retry as lretry
 from returns.maybe import Maybe, Nothing, Some
+from tenacity import retry, stop_after_attempt, wait_fixed
 
 from .config import ddcheck_config
 
-from tenacity import retry, stop_after_attempt, wait_fixed
 
-auth_token = ""
-tweet_api_key = ddcheck_config.tweet_api_key
+def parse_cookie_string(cookie_str) -> Maybe[Dict[str, Any]]:
+    cookie_dict = {}
+    pairs = cookie_str.split(";")
+    for pair in pairs:
+        pair = pair.strip()
+        if "=" in pair:
+            key, value = pair.split("=", 1)
+            cookie_dict[key.strip()] = value.strip()
+    return Some(cookie_dict)
 
-cookie = {"domain": ".x.com", "name": "auth_token", "value": auth_token}
 
-url = "https://x.com/MariaMari0nette"
-# cookie = json.load(open("twitter_cookies.json"))
+# auth_token = ""
+tweet_api_key_rows = ddcheck_config.tweet_api_key
+cookies = [
+    parse_cookie_string(base64.b64decode(key).decode("utf-8")).unwrap()
+    for key in tweet_api_key_rows.split(",")
+]
+pool = Pool(
+    task_id="twcookies",
+    limits=[
+        RateLimitRule(max_requests=1, interval=10, time_unit="minute"),
+    ],
+)
+# cookie = {"domain": ".x.com", "name": "auth_token", "value": auth_token}
 
-# opt = ChromiumOptions().headless()
-# driver = ChromiumPage(opt)
-# driver.set.cookies(cookie)
-# driver.set.window.max()
-# driver.get(url)
+# url = "https://x.com/MariaMari0nette"
 
 
 def format_time_diff(seconds):
@@ -86,122 +100,57 @@ def tw_content(tweet_ele):
 class Tweet:
     search_url = "https://x.com/i/api/graphql/nK1dw4oV3k4w5TdtcAdSww/SearchTimeline"
     auth_token = "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA"
-    failed_cookies = []
-
-    def __init__(self, key=tweet_api_key) -> None:
-        self.cookie = self.parse_cookie_string(
-            base64.b64decode(key).decode("utf-8")
-        ).unwrap()
-
-    def parse_cookie_string(self, cookie_str) -> Maybe[Dict[str, Any]]:
-        cookie_dict = {}
-        pairs = cookie_str.split(";")
-        for pair in pairs:
-            pair = pair.strip()
-            if "=" in pair:
-                key, value = pair.split("=", 1)
-                if value in self.failed_cookies:
-                    return Nothing
-                cookie_dict[key.strip()] = value.strip()
-        return Some(cookie_dict)
 
     @retry(wait=wait_fixed(2), stop=stop_after_attempt(3))
-    def user_tweet(self, id):
-        endpoint = "https://x.com/i/api/graphql/9bXBrlmUXOHFZEq0DuvYWA/UserTweets"
-        variables = json.dumps(
-            {
-                "userId": "1545351225293426688",
-                "includePromotedContent": False,
-                "withQuickPromoteEligibilityTweetFields": False,
-                "withVoice": False,
-                "withV2Timeline": False,
-            }
-        )
-        features = json.dumps(
-            {
-                "responsive_web_graphql_exclude_directive_enabled": True,
-                "verified_phone_label_enabled": True,
-                "responsive_web_home_pinned_timelines_enabled": False,
-                "creator_subscriptions_tweet_preview_api_enabled": True,
-                "responsive_web_graphql_timeline_navigation_enabled": True,
-                "responsive_web_graphql_skip_user_profile_image_extensions_enabled": False,
-                "tweetypie_unmention_optimization_enabled": True,
-                "responsive_web_edit_tweet_api_enabled": True,
-                "graphql_is_translatable_rweb_tweet_is_translatable_enabled": True,
-                "view_counts_everywhere_api_enabled": True,
-                "longform_notetweets_consumption_enabled": True,
-                "responsive_web_twitter_article_tweet_consumption_enabled": False,
-                "tweet_awards_web_tipping_enabled": False,
-                "freedom_of_speech_not_reach_fetch_enabled": True,
-                "standardized_nudges_misinfo": True,
-                "tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled": True,
-                "longform_notetweets_rich_text_read_enabled": True,
-                "longform_notetweets_inline_media_enabled": True,
-                "responsive_web_media_download_video_enabled": False,
-                "responsive_web_enhance_cards_enabled": False,
-            }
-        )
-        headers = {
-            "authorization": f"Bearer {self.auth_token}",
-            "x-csrf-token": self.cookie.get("ct0", ""),
-            "cookie": "; ".join([f"{k}={v}" for k, v in self.cookie.items()]),
-        }
-        with httpx.Client() as client:
-            response = client.get(
-                endpoint,
-                headers=headers,
-                params={"variables": variables, "features": features},
+    def user_tweet(self, id="1545351225293426688"):
+        with pool.context(cookies) as cookie:
+            endpoint = "https://x.com/i/api/graphql/9bXBrlmUXOHFZEq0DuvYWA/UserTweets"
+            variables = json.dumps(
+                {
+                    "userId": id,
+                    "includePromotedContent": False,
+                    "withQuickPromoteEligibilityTweetFields": False,
+                    "withVoice": False,
+                    "withV2Timeline": False,
+                }
             )
-            response.raise_for_status()
-        return response.json()
-
-    @retry(wait=wait_fixed(2), stop=stop_after_attempt(3))
-    def search(self, username):
-        variables = json.dumps(
-            {
-                "rawQuery": f"(from:{username})",
-                "querySource": "typed_query",
-                "product": "Latest",
-            }
-        )
-        features = json.dumps(
-            {
-                "rweb_lists_timeline_redesign_enabled": True,
-                "responsive_web_graphql_exclude_directive_enabled": True,
-                "verified_phone_label_enabled": True,
-                "creator_subscriptions_tweet_preview_api_enabled": True,
-                "responsive_web_graphql_timeline_navigation_enabled": True,
-                "responsive_web_graphql_skip_user_profile_image_extensions_enabled": False,
-                "tweetypie_unmention_optimization_enabled": True,
-                "responsive_web_edit_tweet_api_enabled": True,
-                "graphql_is_translatable_rweb_tweet_is_translatable_enabled": True,
-                "view_counts_everywhere_api_enabled": True,
-                "longform_notetweets_consumption_enabled": True,
-                "responsive_web_twitter_article_tweet_consumption_enabled": False,
-                "tweet_awards_web_tipping_enabled": False,
-                "freedom_of_speech_not_reach_fetch_enabled": True,
-                "standardized_nudges_misinfo": True,
-                "tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled": True,
-                "longform_notetweets_rich_text_read_enabled": True,
-                "longform_notetweets_inline_media_enabled": True,
-                "responsive_web_media_download_video_enabled": False,
-                "responsive_web_enhance_cards_enabled": False,
-            }
-        )
-        headers = {
-            "authorization": f"Bearer {self.auth_token}",
-            "x-csrf-token": self.cookie.get("ct0", ""),
-            "cookie": "; ".join([f"{k}={v}" for k, v in self.cookie.items()]),
-        }
-        with httpx.Client() as client:
-            response = client.get(
-                self.search_url,
-                headers=headers,
-                params={"variables": variables, "features": features},
-                # cookies=self.cookie,
+            features = json.dumps(
+                {
+                    "responsive_web_graphql_exclude_directive_enabled": True,
+                    "verified_phone_label_enabled": True,
+                    "responsive_web_home_pinned_timelines_enabled": False,
+                    "creator_subscriptions_tweet_preview_api_enabled": True,
+                    "responsive_web_graphql_timeline_navigation_enabled": True,
+                    "responsive_web_graphql_skip_user_profile_image_extensions_enabled": False,
+                    "tweetypie_unmention_optimization_enabled": True,
+                    "responsive_web_edit_tweet_api_enabled": True,
+                    "graphql_is_translatable_rweb_tweet_is_translatable_enabled": True,
+                    "view_counts_everywhere_api_enabled": True,
+                    "longform_notetweets_consumption_enabled": True,
+                    "responsive_web_twitter_article_tweet_consumption_enabled": False,
+                    "tweet_awards_web_tipping_enabled": False,
+                    "freedom_of_speech_not_reach_fetch_enabled": True,
+                    "standardized_nudges_misinfo": True,
+                    "tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled": True,
+                    "longform_notetweets_rich_text_read_enabled": True,
+                    "longform_notetweets_inline_media_enabled": True,
+                    "responsive_web_media_download_video_enabled": False,
+                    "responsive_web_enhance_cards_enabled": False,
+                }
             )
-            response.raise_for_status()
-        return response.json()
+            headers = {
+                "authorization": f"Bearer {self.auth_token}",
+                "x-csrf-token": cookie.get("ct0", ""),
+                "cookie": "; ".join([f"{k}={v}" for k, v in cookie.items()]),
+            }
+            with httpx.Client() as client:
+                response = client.get(
+                    endpoint,
+                    headers=headers,
+                    params={"variables": variables, "features": features},
+                )
+                response.raise_for_status()
+            return response.json()
 
     def _best_quality_image(self, url: str) -> str:
         parsed = urlparse(url)
@@ -423,13 +372,17 @@ async def get_tweets(interval: int = 2):
     tweets_data = []
     tweet = Tweet()
     user = "MariaMari0nette"
-    data = tweet.search(user)
+    data = tweet.user_tweet()
     tweets = [
         tweet._filter(detail)
-        for t in get(
-            data,
-            "data.search_by_raw_query.search_timeline.timeline.instructions.0.entries",
-        )
+        for t in next(
+            instruction
+            for instruction in get(
+                data,
+                "data.user.result.timeline.timeline.instructions",
+            )
+            if instruction.get("type") == "TimelineAddEntries"
+        ).get("entries")
         if (
             detail := get(t, "content.itemContent.tweet_results.result.tweet")
             or get(t, "content.itemContent.tweet_results.result")
