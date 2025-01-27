@@ -2,3 +2,5 @@
 dist/
 .vscode/
 test.py
+.venv/
+test/
