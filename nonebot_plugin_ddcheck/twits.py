@@ -399,7 +399,7 @@ async def get_tweets(interval: int = 2):
             "quote": {
                 "text": get(t, "quote.content.text"),
                 "medias": [{"url": m.get("url"), "type": m.get("type")} for m in medias]
-                if (medias := t.get("media"))
+                if (medias := get(t, "quote.media"))
                 else None,
             }
             if t.get("quote")
