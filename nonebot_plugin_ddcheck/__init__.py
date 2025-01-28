@@ -113,12 +113,12 @@ async def run_with_retry(coro_factory, name):
 async def _():
     bot = get_bot()
 
-    # 只有在任务未运行时才创建新任务
     if not _task_running["check_timers"]:
         _task_running["check_timers"] = True
         asyncio.create_task(
             run_with_retry(
-                check_timers(bot, vtb_data, ytb_data, bind_data), "check_timers"
+                lambda: check_timers(bot, vtb_data, ytb_data, bind_data),  # 用lambda“包装”一下
+                "check_timers"
             )
         )
         logger.info("Created check_timers task")
@@ -126,7 +126,10 @@ async def _():
     if not _task_running["watch_tweets"]:
         _task_running["watch_tweets"] = True
         asyncio.create_task(
-            run_with_retry(watch_tweets(bot, vtb_data, bind_data), "watch_tweets")
+            run_with_retry(
+                lambda: watch_tweets(bot, vtb_data, bind_data),
+                "watch_tweets"
+            )
         )
         logger.info("Created watch_tweets task")
 
