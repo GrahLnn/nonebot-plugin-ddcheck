@@ -98,20 +98,20 @@ driver = nonebot.get_driver()
 # 用于追踪任务状态
 _task_running = {"check_timers": False, "watch_tweets": False}
 
+async def run_with_retry(coro_factory, name):
+    while True:
+        coro = coro_factory()  # 每次循环都创建一个新的协程对象
+        try:
+            await coro
+        except Exception as e:
+            logger.error(f"{name} task crashed: {e}")
+            logger.error(traceback.format_exc())
+            await asyncio.sleep(5)
+            logger.info(f"Restarting {name} task...")
 
 @driver.on_bot_connect
 async def _():
     bot = get_bot()
-
-    async def run_with_retry(coro, name):
-        while True:
-            try:
-                await coro
-            except Exception as e:
-                logger.error(f"{name} task crashed: {e}")
-                logger.error(traceback.format_exc())
-                await asyncio.sleep(5)  # 等待5秒后重试
-                logger.info(f"Restarting {name} task...")
 
     # 只有在任务未运行时才创建新任务
     if not _task_running["check_timers"]:
