@@ -170,10 +170,9 @@ class Tweet:
             防止出现较短 URL 先匹配把长 URL 给拆了的情况。
             """
             # 如果urls为None或为空，直接返回原始文本
-            print(f"remove_urls: {text} {urls}")
-            if urls:
-                # 先对要匹配的 urls 根据长度倒序排列，防止长的被短的覆盖
-                urls_sorted = sorted(set(urls), key=len, reverse=True)
+
+            # 先对要匹配的 urls 根据长度倒序排列，防止长的被短的覆盖
+            urls_sorted = sorted(set([u for u in urls if u]), key=len, reverse=True)
 
             # 由于可能末尾连续存在多个 URL，我们用 while 循环一直砍到不匹配为止
             while True:
@@ -376,8 +375,7 @@ async def get_tweets(interval: int = 2):
     tweet = Tweet()
     user = "MariaMari0nette"
     data = tweet.user_tweet()
-    try:
-        tweets = [
+    tweets = [
         tweet._filter(detail)
         for t in next(
             instruction
@@ -392,9 +390,6 @@ async def get_tweets(interval: int = 2):
             or get(t, "content.itemContent.tweet_results.result")
         )
     ]
-    except Exception:
-        # print(detail)
-        raise
     for t in tweets:
         time_format = "%a %b %d %H:%M:%S %z %Y"
         ttime = datetime.strptime(get(t, "created_at"), time_format)
