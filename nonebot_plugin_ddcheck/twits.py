@@ -396,7 +396,7 @@ async def get_tweets(interval: int = 2):
         raise
     for t in tweets:
         time_format = "%a %b %d %H:%M:%S %z %Y"
-        time = datetime.strptime(get(t, "created_at"), time_format)
+        ttime = datetime.strptime(get(t, "created_at"), time_format)
         fil = {
             "text": get(t, "content.text"),
             "medias": [{"url": m.get("url"), "type": m.get("type")} for m in medias]
@@ -412,10 +412,10 @@ async def get_tweets(interval: int = 2):
             else None,
         }
         # print(json.dumps(fil, ensure_ascii=False))
-        if (datetime.now(timezone.utc) - time).total_seconds() > interval * 60 or get(
+        if (datetime.now(timezone.utc) - ttime).total_seconds() > interval * 60 or get(
             t, "author.screen_name"
         ) != user:
             continue
-        print(datetime.now(timezone.utc), time, json.dumps(fil, ensure_ascii=False))
+        print(datetime.now(timezone.utc), ttime, json.dumps(fil, ensure_ascii=False))
         tweets_data.append(fil)
     return tweets_data
