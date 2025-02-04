@@ -107,7 +107,7 @@ async def run_with_retry(coro_factory, name):
         except Exception as e:
             logger.error(f"{name} task crashed: {e}")
             logger.error(traceback.format_exc())
-            await asyncio.sleep(5)
+            await asyncio.sleep(10)
             logger.info(f"Restarting {name} task...")
 
 
