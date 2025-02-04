@@ -375,7 +375,8 @@ async def get_tweets(interval: int = 2):
     tweet = Tweet()
     user = "MariaMari0nette"
     data = tweet.user_tweet()
-    tweets = [
+    try:
+        tweets = [
         tweet._filter(detail)
         for t in next(
             instruction
@@ -390,6 +391,9 @@ async def get_tweets(interval: int = 2):
             or get(t, "content.itemContent.tweet_results.result")
         )
     ]
+    except Exception:
+        print(detail)
+        raise
     for t in tweets:
         time_format = "%a %b %d %H:%M:%S %z %Y"
         time = datetime.strptime(get(t, "created_at"), time_format)

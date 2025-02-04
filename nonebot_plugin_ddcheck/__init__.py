@@ -98,6 +98,7 @@ driver = nonebot.get_driver()
 # 用于追踪任务状态
 _task_running = {"check_timers": False, "watch_tweets": False}
 
+
 async def run_with_retry(coro_factory, name):
     while True:
         coro = coro_factory()  # 每次循环都创建一个新的协程对象
@@ -109,6 +110,7 @@ async def run_with_retry(coro_factory, name):
             await asyncio.sleep(5)
             logger.info(f"Restarting {name} task...")
 
+
 @driver.on_bot_connect
 async def _():
     bot = get_bot()
@@ -117,8 +119,10 @@ async def _():
         _task_running["check_timers"] = True
         asyncio.create_task(
             run_with_retry(
-                lambda: check_timers(bot, vtb_data, ytb_data, bind_data),  # 用lambda“包装”一下
-                "check_timers"
+                lambda: check_timers(
+                    bot, vtb_data, ytb_data, bind_data
+                ),  # 用lambda“包装”一下
+                "check_timers",
             )
         )
         logger.info("Created check_timers task")
@@ -127,8 +131,7 @@ async def _():
         _task_running["watch_tweets"] = True
         asyncio.create_task(
             run_with_retry(
-                lambda: watch_tweets(bot, vtb_data, bind_data),
-                "watch_tweets"
+                lambda: watch_tweets(bot, vtb_data, bind_data), "watch_tweets"
             )
         )
         logger.info("Created watch_tweets task")
@@ -634,11 +637,13 @@ async def handle_whenlive(bot: Bot, matcher: Matcher, msg: Message = CommandArg(
 async def watch_tweets(bot, vtb_data, bind_data):
     interval = 2
     error_count = 0
+    error_msg = ""
     while True:
         if error_count >= 3:
             for group in vtb_data[0]["sub_group"]:
                 await bot.send_group_msg(
-                    group_id=group, message="retry too many times, now stop"
+                    group_id=group,
+                    message=f"retry too many times, now stop: {error_msg}",
                 )
             raise Exception("retry too many times")
         try:
@@ -648,8 +653,7 @@ async def watch_tweets(bot, vtb_data, bind_data):
             exc = traceback.format_exc()
             error_count += 1
             msg = f"58是狗，retry， error: {e}\n\n{exc}"
-            for group in vtb_data[0]["sub_group"]:
-                await bot.send_group_msg(group_id=group, message=msg)
+            error_msg = msg
             continue
 
         unique_tweets = {tweet["text"]: tweet for tweet in tweets}.values()
