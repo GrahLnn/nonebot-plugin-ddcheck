@@ -169,8 +169,10 @@ class Tweet:
             urls 可能很多，所以这里先按长度倒序排一下，
             防止出现较短 URL 先匹配把长 URL 给拆了的情况。
             """
-            # 先对要匹配的 urls 根据长度倒序排列，防止长的被短的覆盖
-            urls_sorted = sorted(set(urls), key=len, reverse=True)
+            # 如果urls为None或为空，直接返回原始文本
+            if urls:
+                # 先对要匹配的 urls 根据长度倒序排列，防止长的被短的覆盖
+                urls_sorted = sorted(set(urls), key=len, reverse=True)
 
             # 由于可能末尾连续存在多个 URL，我们用 while 循环一直砍到不匹配为止
             while True:
