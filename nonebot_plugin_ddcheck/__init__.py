@@ -266,6 +266,8 @@ async def handle_quickat(
             "召唤一群狗",
             "群狗召唤",
             "大召唤兽",
+            "都来猎",
+            "都来裂"
         ]
     ):
         qq_list = [
