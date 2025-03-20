@@ -137,7 +137,7 @@ async def _():
         logger.info("Created watch_tweets task")
 
 
-ddcheck = on_command("查成分", aliases={"ccf"}, block=True, priority=12)
+# ddcheck = on_command("查成分", aliases={"ccf"}, block=True, priority=12)
 ddadd = on_command("adddd", block=True, priority=12)
 vtbadd = on_command("vtbadd", block=True, priority=12)
 ytbadd = on_command("ytbadd", block=True, priority=12)
@@ -449,7 +449,7 @@ async def handle_bindall(
     await matcher.finish(str(bind_data))
 
 
-@ddcheck.handle()
+# @ddcheck.handle()
 async def handle_ddcheck(matcher: Matcher, msg: Message = CommandArg()):
     text = msg.extract_plain_text().strip()
     text = next((item["uid"] for item in alias_data if item["nickname"] == text), text)
