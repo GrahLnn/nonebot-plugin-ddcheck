@@ -147,7 +147,7 @@ async def get_user_follows(uid: int) -> List[int]:
     }
 
     pn = 1
-    total = None
+    total = -1
     count = 0
     follows = []
 
@@ -161,7 +161,7 @@ async def get_user_follows(uid: int) -> List[int]:
             result = resp.json()
 
             try:
-                if total is None:
+                if total < 0:
                     total = result["data"]["total"]  # 获取总关注数
 
                 follow_list = result["data"]["list"]
