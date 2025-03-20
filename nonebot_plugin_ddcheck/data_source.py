@@ -128,9 +128,33 @@ async def get_user_info(uid: int) -> dict:
         resp.raise_for_status()
         result = resp.json()
         try:
-            return result["card"]
+            return result["data"]["card"]
         except Exception:
-            logger.warning(f"Get {uid} user info failed: {result}")
+            logger.warning(
+                f"Get {uid} user info failed: {json.dumps(result, ensure_ascii=False, indent=2)}"
+            )
+            raise
+
+
+async def get_user_follows(uid: int) -> List[int]:
+    cookies.update(await get_homepage_cookies())
+    url = "https://api.bilibili.com/x/relation/followings"
+    params = {"vmid": uid}
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        "Referer": "https://www.bilibili.com/",
+        "Accept": "application/json, text/plain, */*",
+    }
+    async with httpx.AsyncClient(timeout=10) as client:
+        resp = await client.get(url, params=params, cookies=cookies, headers=headers)
+        resp.raise_for_status()
+        result = resp.json()
+        try:
+            return [info["mid"] for info in result["data"]["list"]]
+        except Exception:
+            logger.warning(
+                f"Get {uid} user follows failed: {json.dumps(result, ensure_ascii=False, indent=2)}"
+            )
             raise
 
 
@@ -171,7 +195,7 @@ async def get_reply(name: str) -> Union[str, bytes]:
         logger.warning(traceback.format_exc())
         return "获取用户信息失败，请检查名称或稍后再试"
 
-    attentions = user_info.get("attentions", [])
+    attentions = await get_user_follows(uid)
     follows_num = int(user_info["attention"])
     if not attentions and follows_num:
         return "获取用户关注列表失败，关注列表可能未公开"
