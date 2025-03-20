@@ -159,6 +159,7 @@ async def get_user_follows(uid: int) -> List[int]:
             )
             resp.raise_for_status()
             result = resp.json()
+            print(json.dumps(result, ensure_ascii=False, indent=2))
 
             try:
                 if total < 0:
