@@ -152,7 +152,7 @@ async def get_user_follows(uid: int) -> List[int]:
     follows = []
 
     async with httpx.AsyncClient(timeout=10) as client:
-        while count < total:
+        while count < total or total < 0:
             params = {"vmid": uid, "pn": pn}
             resp = await client.get(
                 url, params=params, cookies=cookies, headers=headers
