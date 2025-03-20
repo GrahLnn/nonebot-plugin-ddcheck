@@ -159,7 +159,7 @@ async def get_user_follows(uid: int) -> List[int]:
             )
             resp.raise_for_status()
             result = resp.json()
-            print(json.dumps(result, ensure_ascii=False, indent=2))
+            # print(json.dumps(result, ensure_ascii=False, indent=2))
 
             try:
                 if total < 0:
@@ -220,7 +220,8 @@ async def get_reply(name: str) -> Union[str, bytes]:
         logger.warning(traceback.format_exc())
         return "获取用户信息失败，请检查名称或稍后再试"
 
-    attentions = await get_user_follows(uid)
+    # attentions = await get_user_follows(uid)
+    attentions = user_info.get("attentions", [])
     # follows_num = int(user_info["attention"])
     follows_num = len(attentions)
     if not attentions and follows_num:
