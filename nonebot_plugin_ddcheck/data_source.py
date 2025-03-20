@@ -196,7 +196,8 @@ async def get_reply(name: str) -> Union[str, bytes]:
         return "获取用户信息失败，请检查名称或稍后再试"
 
     attentions = await get_user_follows(uid)
-    follows_num = int(user_info["attention"])
+    # follows_num = int(user_info["attention"])
+    follows_num = len(attentions)
     if not attentions and follows_num:
         return "获取用户关注列表失败，关注列表可能未公开"
 
