@@ -127,7 +127,11 @@ async def get_user_info(uid: int) -> dict:
         resp = await client.get(url, params=params, cookies=cookies, headers=headers)
         resp.raise_for_status()
         result = resp.json()
-        return result["card"]
+        try:
+            return result["card"]
+        except Exception:
+            logger.warning(f"Get {uid} user info failed: {result}")
+            raise
 
 
 def format_color(color: int) -> str:
