@@ -139,23 +139,46 @@ async def get_user_info(uid: int) -> dict:
 async def get_user_follows(uid: int) -> List[int]:
     cookies.update(await get_homepage_cookies())
     url = "https://api.bilibili.com/x/relation/followings"
-    params = {"vmid": uid}
+
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
         "Referer": "https://www.bilibili.com/",
         "Accept": "application/json, text/plain, */*",
     }
+
+    pn = 1
+    total = None
+    count = 0
+    follows = []
+
     async with httpx.AsyncClient(timeout=10) as client:
-        resp = await client.get(url, params=params, cookies=cookies, headers=headers)
-        resp.raise_for_status()
-        result = resp.json()
-        try:
-            return [info["mid"] for info in result["data"]["list"]]
-        except Exception:
-            logger.warning(
-                f"Get {uid} user follows failed: {json.dumps(result, ensure_ascii=False, indent=2)}"
+        while total is None or count < total:
+            params = {"vmid": uid, "pn": pn}
+            resp = await client.get(
+                url, params=params, cookies=cookies, headers=headers
             )
-            raise
+            resp.raise_for_status()
+            result = resp.json()
+
+            try:
+                if total is None:
+                    total = result["data"]["total"]  # 获取总关注数
+
+                follow_list = result["data"]["list"]
+                if not follow_list:  # 关注列表为空，说明爬取结束
+                    break
+
+                follows.extend([info["mid"] for info in follow_list])
+                count += len(follow_list)  # 更新已获取数量
+                pn += 1  # 增加页数
+
+            except Exception:
+                logger.warning(
+                    f"Get {uid} user follows failed: {json.dumps(result, ensure_ascii=False, indent=2)}"
+                )
+                raise
+
+    return follows
 
 
 def format_color(color: int) -> str:
