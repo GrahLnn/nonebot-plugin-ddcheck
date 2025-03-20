@@ -137,7 +137,7 @@ async def get_user_info(uid: int) -> dict:
 
 
 async def get_user_follows(uid: int) -> List[int]:
-    cookies.update(await get_homepage_cookies())
+    # cookies.update(await get_homepage_cookies())
     url = "https://api.bilibili.com/x/relation/followings"
 
     headers = {
@@ -220,8 +220,8 @@ async def get_reply(name: str) -> Union[str, bytes]:
         logger.warning(traceback.format_exc())
         return "获取用户信息失败，请检查名称或稍后再试"
 
-    # attentions = await get_user_follows(uid)
-    attentions = user_info.get("attentions", [])
+    attentions = await get_user_follows(uid)
+    # attentions = user_info.get("attentions", [])
     # follows_num = int(user_info["attention"])
     follows_num = len(attentions)
     if not attentions and follows_num:
