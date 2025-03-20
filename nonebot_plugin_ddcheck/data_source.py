@@ -115,7 +115,7 @@ async def get_medals(uid: int) -> List[dict]:
 
 
 async def get_user_info(uid: int) -> dict:
-    cookies.update(await get_homepage_cookies())
+    # cookies.update(await get_homepage_cookies())
     url = "https://api.bilibili.com/x/web-interface/card"
     params = {"mid": uid}
     headers = {
