@@ -153,7 +153,7 @@ async def get_user_follows(uid: int) -> List[int]:
 
     async with httpx.AsyncClient(timeout=10) as client:
         while count < total or total < 0:
-            params = {"vmid": uid, "pn": pn}
+            params = {"vmid": uid, "pn": pn, "ps": 24}
             resp = await client.get(
                 url, params=params, cookies=cookies, headers=headers
             )
@@ -164,7 +164,6 @@ async def get_user_follows(uid: int) -> List[int]:
             try:
                 if total < 0:
                     total = result["data"]["total"]  # 获取总关注数
-                    print(f"Total follows: {total}")
 
                 follow_list = result["data"]["list"]
                 if not follow_list:  # 关注列表为空，说明爬取结束
