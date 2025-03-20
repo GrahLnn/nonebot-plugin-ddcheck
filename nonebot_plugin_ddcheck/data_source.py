@@ -116,8 +116,8 @@ async def get_medals(uid: int) -> List[dict]:
 
 async def get_user_info(uid: int) -> dict:
     cookies.update(await get_homepage_cookies())
-    url = "https://account.bilibili.com/api/member/getCardByMid"
-    params = {"mid": uid}
+    url = "https://api.bilibili.com/x/relation/followings"
+    params = {"vmid": uid}
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
         "Referer": "https://www.bilibili.com/",
