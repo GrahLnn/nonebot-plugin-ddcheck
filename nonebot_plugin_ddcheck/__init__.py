@@ -267,7 +267,7 @@ async def handle_quickat(
             "群狗召唤",
             "大召唤兽",
             "都来猎",
-            "都来裂"
+            "都来裂",
         ]
     ):
         qq_list = [
@@ -310,29 +310,30 @@ async def handle_rmmember(
     if str(event.user_id) not in superusers:
         await matcher.finish("你不是管理员，离开")
 
-    at_segment = msg["at"]
-    if not at_segment:
-        await matcher.finish("请@要解绑的用户")
-
-    # 获取被@用户的QQ号
-    target_qq = str(at_segment[0].data["qq"])
-
-    # 获取当前群号
     group_id = str(event.group_id)
     info = msg.extract_plain_text().strip().split()
+    if not info:
+        await matcher.finish("请提供要解绑的昵称")
+
     nicknames = info[0].split(",")
+
+    failed = []
     for nickname in nicknames:
-        data = {
-            "nickname": nickname,
-            "qq": target_qq,
-            "group_id": group_id,
-        }
-        if data in member_data:
-            member_data.remove(data)
-        else:
-            await matcher.finish(f"{nickname}没有绑定过")
+        before_len = len(member_data)
+        member_data[:] = [
+            m
+            for m in member_data
+            if not (m["nickname"] == nickname and m["group_id"] == group_id)
+        ]
+        if len(member_data) == before_len:
+            failed.append(nickname)
+
     save_json(member_file, member_data)
-    await matcher.finish("更新成功")
+
+    if failed:
+        await matcher.finish(f"以下昵称没有绑定记录：{', '.join(failed)}")
+    else:
+        await matcher.finish("解绑成功")
 
 
 @member.handle()  # member nickname1,nickname2,nickname3 @msg
