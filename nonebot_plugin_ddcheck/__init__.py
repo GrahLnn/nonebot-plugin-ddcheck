@@ -319,11 +319,14 @@ async def handle_rmmember(
 
     failed = []
     for nickname in nicknames:
+        qq = {
+            m["qq"]
+            for m in member_data
+            if m["nickname"] == nickname and m["group_id"] == group_id
+        }
         before_len = len(member_data)
         member_data[:] = [
-            m
-            for m in member_data
-            if not (m["nickname"] == nickname and m["group_id"] == group_id)
+            m for m in member_data if not (m["qq"] in qq and m["group_id"] == group_id)
         ]
         if len(member_data) == before_len:
             failed.append(nickname)
